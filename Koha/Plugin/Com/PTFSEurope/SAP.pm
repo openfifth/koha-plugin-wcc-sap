@@ -235,6 +235,8 @@ sub _generate_report {
         # Collect 'General Ledger lines'
         my $invoice_total = 0;
         my $tax_amount = 0;
+        my $suppliernumber;
+        my $costcenter;
         while ( my $line = $orders->next ) {
             my $unitprice = Koha::Number::Price->new( $line->unitprice )->round * 100;
             $invoice_total = $invoice_total + $unitprice;
@@ -268,8 +270,11 @@ sub _generate_report {
               . ","
               . ","
               . ","
-              . "," 
+              . ","
               . "\n";
+
+            $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
+            $costcenter = $self->_map_fund_to_costcenter($line->budget->budget_code);
         }
 
         # Add 'Accounts Payable line'
@@ -283,8 +288,8 @@ sub _generate_report {
           . $tax_amount . ","
           . $invoice->invoicenumber . ","
           . ( $invoice->shipmentdate =~ s/-//gr ) . ","
-          . ","
-          . ","
+          . $costcenter . ","
+          . $suppliernumber . ","
           . ","
           . ","
           . $invoice->_result->booksellerid->invoiceprice->currency . ","
@@ -344,73 +349,81 @@ sub _generate_filename {
 }
 
 sub _map_fund_to_costcenter {
-    my ($self, $fund) = @_;
+    my ( $self, $fund ) = @_;
     my $map = {
-        KAFI   => "E26315",
-        KANF   => "E26315",
-        KARC   => "E26311",
-        KBAS   => "E26315",
-        KCFI   => "E26315",
-        KCHG   => "E26315",
-        KCNF   => "E26315",
-        KCOM   => "E26315",
-        KEBE   => "E26315",
-        KELE   => "E26315",
-        KERE   => "E26341",
-        KFSO   => "E26315",
-        KHLS   => "E26330",
-        KLPR   => "E26315",
-        KNHC   => "E26315",
-        KNSO   => "E26315",
-        KPER   => "E26315",
-        KRCHI  => "E26315",
-        KREF   => "E26315",
-        KREFSO => "E26315",
-        KREP   => "E26315",
-        KREQ   => "E26315",
-        KRFI   => "E26315",
-        KRNF   => "E26315",
-        KSPO   => "E26315",
-        KSSS   => "E26315",
-        KVAT   => "E26315",
-        KYAD   => "E26315",
+        WAFI   => "W26315",
+        WANF   => "W26315",
+        WARC   => "W26311",
+        WBAS   => "W26315",
+        WCFI   => "W26315",
+        WCHG   => "W26315",
+        WCHI   => "W26315",
+        WCNF   => "W26315",
+        WCOM   => "W26315",
+        WEBE   => "W26315",
+        WELE   => "W26315",
+        WERE   => "W26353",
+        WFSO   => "W26315",
+        WHLS   => "W26352",
+        WLPR   => "W26315",
+        WNHC   => "W26315",
+        WNSO   => "W26315",
+        WPER   => "W26315",
+        WRCHI  => "W26315",
+        WREF   => "W26353",
+        WREFSO => "W26315",
+        WREP   => "W26315",
+        WREQ   => "W26315",
+        WRFI   => "W26315",
+        WRNF   => "W26315",
+        WSHC   => "W26353",
+        WSPO   => "W26315",
+        WSSS   => "W26315",
+        WVAT   => "W26315",
+        WWML   => "W26352",
+        WYAD   => ''
     };
-    return $map->{$fund};
+    my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
+    return $return;
 }
 
 sub _map_fund_to_suppliernumber {
-    my ($self, $fund) = @_;
+    my ( $self, $fund ) = @_;
     my $map = {
-        KAFI   => 4539,
-        KANF   => 4539,
-        KARC   => 4539,
-        KBAS   => 4539,
-        KCFI   => 4539,
-        KCHG   => 4539,
-        KCNF   => 4539,
-        KCOM   => 4539,
-        KEBE   => 4539,
-        KELE   => 4539,
-        KERE   => 5190,
-        KFSO   => 4539,
-        KHLS   => 4539,
-        KLPR   => 4539,
-        KNHC   => 4539,
-        KNSO   => 4539,
-        KPER   => 4625,
-        KRCHI  => 4539,
-        KREF   => 4539,
-        KREFSO => 4539,
-        KREP   => 4539,
-        KREQ   => 4539,
-        KRFI   => 4539,
-        KRNF   => 4539,
-        KSPO   => 4539,
-        KSSS   => 4539,
-        KVAT   => 4539,
-        KYAD   => 4539,
+        WAFI   => 4539,
+        WANF   => 4539,
+        WARC   => 4539,
+        WBAS   => 4539,
+        WCFI   => 4539,
+        WCHG   => 4539,
+        WCHI   => 4539,
+        WCNF   => 4539,
+        WCOM   => 4539,
+        WEBE   => 4539,
+        WELE   => 4539,
+        WERE   => 5190,
+        WFSO   => 4539,
+        WHLS   => 4539,
+        WLPR   => 4539,
+        WNHC   => 4539,
+        WNSO   => 4539,
+        WPER   => 4625,
+        WRCHI  => 4539,
+        WREF   => 4539,
+        WREFSO => 4539,
+        WREP   => 4539,
+        WREQ   => 4539,
+        WRFI   => 4539,
+        WRNF   => 4539,
+        WSHC   => 4539,
+        WSPO   => 4539,
+        WSSS   => 4539,
+        WVAT   => 4539,
+        WWML   => 4539,
+        WYAD   => ''
     };
-    return $map->{$fund};
+    my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
+    return $return;
 }
 
 1;
