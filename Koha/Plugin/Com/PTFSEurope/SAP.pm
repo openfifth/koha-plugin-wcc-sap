@@ -248,7 +248,7 @@ sub _generate_report {
               : $tax_rate_on_receiving == 5  ? 'P2'
               : $tax_rate_on_receiving == 0  ? 'P3'
               :                                '';
-            $lines .= "GL" . ","
+            $lines .= "\n" . "GL" . ","
               . $self->_map_fund_to_suppliernumber($line->budget->budget_code) . ","
               . $invoice->invoicenumber . ","
               . $unitprice . ","
@@ -270,8 +270,7 @@ sub _generate_report {
               . ","
               . ","
               . ","
-              . ","
-              . "\n";
+              . ",";
 
             $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
             $costcenter = $self->_map_fund_to_costcenter($line->budget->budget_code);
@@ -280,7 +279,7 @@ sub _generate_report {
         # Add 'Accounts Payable line'
         $invoice_total = $invoice_total * -1;
         $overall_total = $overall_total + $invoice_total;
-        $results .= "AP" . ","
+        $results .= "\n" . "AP" . ","
           . $invoice->_result->booksellerid->accountnumber . ","
           . $invoice->invoicenumber . ","
           . ( $invoice->closedate =~ s/-//gr ) . ","
@@ -303,8 +302,7 @@ sub _generate_report {
           . ","
           . ","
           . ","
-          . $invoice->_result->booksellerid->fax
-          . "\n";
+          . $invoice->_result->booksellerid->fax;
         $results .= $lines;
     }
 
