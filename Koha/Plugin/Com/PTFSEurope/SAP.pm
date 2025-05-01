@@ -331,7 +331,6 @@ sub _generate_report {
       . ","
       . ","
       . ","
-      . "\n"
       . $results;
 
       return $results;
