@@ -11,7 +11,7 @@ use File::Spec;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 
-our $VERSION  = '0.0.05';
+our $VERSION  = '0.0.06';
 our $metadata = {
     name => 'SAP Finance Integration',
 
@@ -107,11 +107,12 @@ sub cronjob_nightly {
 
     my $report = $self->_generate_report($start_date, $end_date);
     my $filename = $self->_generate_filename();
+    my $filepath = "IN/LB01/WK/" . $filename;
 
     if ( $output eq 'upload' ) {
         $transport->connect;
         open my $fh, '<', \$report;
-        if ( $transport->file_upload($fh, $filename) ) {
+        if ( $transport->upload_file($fh, $filepath) ) {
             close $fh;
             return 1;
         } else {
