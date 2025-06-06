@@ -239,7 +239,7 @@ sub _generate_report {
         my $suppliernumber;
         my $costcenter;
         while ( my $line = $orders->next ) {
-            my $unitprice = Koha::Number::Price->new( $line->unitprice )->round * 100;
+            my $unitprice = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
             $invoice_total = $invoice_total + $unitprice;
             my $tax_value_on_receiving = Koha::Number::Price->new( $line->tax_value_on_receiving )->round * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
