@@ -11,7 +11,7 @@ use File::Spec;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 
-our $VERSION  = '0.0.07';
+our $VERSION  = '0.0.08';
 our $metadata = {
     name => 'SAP Finance Integration',
 
@@ -105,7 +105,8 @@ sub cronjob_nightly {
     my $start_date = $now->clone->subtract(days => ($today - $previous_day) % 7);
     my $end_date   = $now;
 
-    my $report = $self->_generate_report($start_date, $end_date);
+    my $report = $self->_generate_report($start_date, $end_date, 1);
+    return if !$report;
     my $filename = $self->_generate_filename();
     my $filepath = "IN/LB01/WK/" . $filename;
 
@@ -203,7 +204,7 @@ sub report_step2 {
 }
 
 sub _generate_report {
-    my ( $self, $startdate, $enddate ) = @_;
+    my ( $self, $startdate, $enddate, $cron ) = @_;
 
     my $dbh   = C4::Context->dbh;
     my $where = { 'booksellerid.name' => { 'LIKE' => 'WCC%' } };
@@ -224,6 +225,8 @@ sub _generate_report {
 
     my $invoices = Koha::Acquisition::Invoices->search( $where,
         { prefetch => [ 'booksellerid', 'aqorders' ] } );
+
+    return 0 if $invoices->count == 0 && $cron;
 
     my $results       = "";
     my $invoice_count = 0;
