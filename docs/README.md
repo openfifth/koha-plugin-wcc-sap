@@ -21,15 +21,15 @@ This directory contains additional documentation for the WCC SAP Finance Integra
 
 ## Quick Links
 
-- [Plugin Source Code](../Koha/Plugin/Com/PTFSEurope/SAP.pm)
+- [Plugin Source Code](../Koha/Plugin/Com/OpenFifth/SAP.pm)
 - [Test Suite](../t/)
-- [Release Notes](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/releases)
-- [Issue Tracker](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/issues)
+- [Release Notes](https://github.com/openfifth/koha-plugin-wcc-sap/releases)
+- [Issue Tracker](https://github.com/openfifth/koha-plugin-wcc-sap/issues)
 
 ## Getting Help
 
 If you can't find what you're looking for in the documentation:
 
-1. Check the [Issues](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/issues) for existing questions
+1. Check the [Issues](https://github.com/openfifth/koha-plugin-wcc-sap/issues) for existing questions
 2. Search the [Koha Community Wiki](https://wiki.koha-community.org/wiki/Koha_plugins)
 3. Create a new issue with your question

@@ -81,7 +81,7 @@ npm run release:major    # For breaking changes (0.0.7 → 1.0.0)
 ```
 
 **Option 2: Manual Process**
-1. Update version in `Koha/Plugin/Com/PTFSEurope/SAP.pm`
+1. Update version in `Koha/Plugin/Com/OpenFifth/SAP.pm`
 2. Update version in `package.json` to match
 3. Run the release script:
    ```bash
@@ -108,7 +108,7 @@ koha-plugin-wcc-sap/
 ├── Koha/
 │   └── Plugin/
 │       └── Com/
-│           └── PTFSEurope/
+│           └── OpenFifth/
 │               ├── SAP.pm  # Main plugin file
 │               └── SAP/    # Template files
 │                   ├── configure.tt
@@ -185,7 +185,7 @@ For new features:
 
 ## Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/issues)
+- **Issues**: [GitHub Issues](https://github.com/openfifth/koha-plugin-wcc-sap/issues)
 - **Discussions**: Use GitHub Discussions for questions
 - **Documentation**: Check the `docs/` directory and README.md
 
