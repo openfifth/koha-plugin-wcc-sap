@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/PTFS-Europe/koha-plugin-wcc-sap/compare/v0.0.09...HEAD
-[0.0.09]: https://github.com/PTFS-Europe/koha-plugin-wcc-sap/compare/v0.0.08...v0.0.09
-[0.0.08]: https://github.com/PTFS-Europe/koha-plugin-wcc-sap/compare/v0.0.07...v0.0.08
-[0.0.07]: https://github.com/PTFS-Europe/koha-plugin-wcc-sap/releases/tag/v0.0.07
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.09...HEAD
+[0.0.09]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.08...v0.0.09
+[0.0.08]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.07...v0.0.08
+[0.0.07]: https://github.com/openfifth/koha-plugin-wcc-sap/releases/tag/v0.0.07

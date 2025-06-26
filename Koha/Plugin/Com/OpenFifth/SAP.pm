@@ -1,4 +1,4 @@
-package Koha::Plugin::Com::PTFSEurope::SAP;
+package Koha::Plugin::Com::OpenFifth::SAP;
 
 use Modern::Perl;
 
@@ -11,11 +11,11 @@ use File::Spec;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 
-our $VERSION = '0.0.12';
+our $VERSION = '0.0.07';
 our $metadata = {
     name => 'SAP Finance Integration',
 
-    author          => 'PTFS Europe',
+    author          => 'Open Fifth',
     date_authored   => '2024-11-15',
     date_updated    => '2024-11-15',
     minimum_version => '24.11.00.000',
