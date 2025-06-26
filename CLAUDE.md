@@ -8,7 +8,9 @@ This is a Koha plugin for SAP finance integration that enables invoice export to
 
 ## Architecture
 
-- **Main Plugin File**: `Koha/Plugin/Com/PTFSEurope/SAP.pm` - Core plugin logic with version 0.0.07
+### Plugin Structure
+
+- **Main Plugin File**: `Koha/Plugin/Com/PTFSEurope/SAP.pm` - Core plugin logic with version 0.0.08
 - **Templates**: Template Toolkit (`.tt`) files in `Koha/Plugin/Com/PTFSEurope/SAP/` for UI components:
   - `configure.tt` - Plugin configuration interface
   - `report-step1.tt` - Initial report generation form
@@ -20,56 +22,100 @@ This is a Koha plugin for SAP finance integration that enables invoice export to
 ## Development Commands
 
 ### Release Management
-```bash
-npm run release
-# Equivalent to: bash ./release_kpz.sh
-```
-Creates a .kpz plugin file, validates version updates, commits changes, creates git tags, and pushes to GitHub.
 
-### Manual Plugin Build
 ```bash
-zip -r koha-plugin-sap.kpz Koha/
+# Testing
+npm test                    # Run all tests
+npm run test:verbose        # Run tests with verbose output
+
+# Version Management
+npm run version:patch       # Increment patch version (0.0.21 -> 0.0.22)
+npm run version:minor       # Increment minor version (0.1.0 -> 0.2.0)
+npm run version:major       # Increment major version (1.0.0 -> 2.0.0)
+
+# Releases (automated)
+npm run release:patch       # Version bump + tag + push for patch release
+npm run release:minor       # Version bump + tag + push for minor release
+npm run release:major       # Version bump + tag + push for major release
 ```
 
-### Version Checking
-```bash
-node checkVersionNumber.js version    # Get current version
-node checkVersionNumber.js filename   # Get plugin filename
-```
+### Automated Release Process
 
-### Remote Validation
+1. `npm run release:*` increments version in both package.json and Oracle.pm
+2. Updates `date_updated` in plugin metadata
+3. Commits changes with "chore: bump version" message
+4. Creates version tag (v1.2.3) and pushes to GitHub
+5. GitHub Actions workflow triggers automatically
+6. Tests run against Koha main, stable, and oldstable versions
+7. KPZ file is created automatically using ByWater's official action
+8. GitHub release is created with KPZ artifact and CHANGELOG.md
+
+### Version Synchronization
+
+- Package.json and Oracle.pm versions are automatically synchronized
+- `increment_version.js` utility handles both files simultaneously
+- Tests verify version consistency between files
+- Format: semantic versioning (major.minor.patch)
+
+### Testing
+
 ```bash
-node checkRemotes.js check $(git remote -v)
+prove t/                # Run test suite
+prove t/00-load.t      # Run specific test
 ```
 
 ## Key Components
 
 ### Plugin Structure
+
 - Inherits from `Koha::Plugins::Base`
 - Uses Modern Perl with strict/warnings
 - Integrates with Koha's file transport system for SAP data delivery
 - Supports both file output and remote upload via transports
 
 ### Version Management
-- Version defined in `SAP.pm` as `our $VERSION = '0.0.07'`
+
+- Version defined in `SAP.pm` as `our $VERSION = '0.0.08'`
 - Automated version checking prevents duplicate releases
 - Git tags created automatically matching version numbers
 
 ### Report Generation
+
 - Two-step report process with date range selection
 - Supports both HTML and text output formats
 - Automatic scheduling based on configured transport days
 - File naming follows SAP conventions with timestamp
 
 ### Transport Configuration
+
 - Integrates with Koha::File::Transports for data delivery
 - Supports multiple transport methods (SFTP, etc.)
 - Configurable upload paths: `IN/LB01/WK/{filename}`
 
+## GitHub Actions Automation
+
+### Automated CI/CD Process
+
+- GitHub Actions workflow (`.github/workflows/main.yml`) triggers on:
+  - Pushes to `main` branch
+  - Git tags matching `v*.*.*` pattern
+- Runs comprehensive unit tests against multiple Koha versions (main, stable, oldstable)
+- Automatically creates .kpz file and GitHub releases on tagged versions
+- Requires `contents: write` permissions
+
+### Workflow Steps
+
+1. **Unit Tests**: Run plugin tests in Koha testing environment for multiple versions
+2. **Release** (on tags only):
+   - Build .kpz plugin file using bywatersolutions/github-action-koha-plugin-create-kpz
+   - Create GitHub release with .kpz file and changelog
+   - Generate release notes automatically
+
 ## Development Notes
 
-- No test framework is currently configured (`"test": "echo \"Error: no test specified\" && exit 1"`)
+- Basic test framework configured in `t/` directory
 - Plugin packaging uses zip compression of the `Koha/` directory
-- Version updates must be done in the `.pm` file before release
-- Release script automatically excludes template repository remotes
+- Version synchronization between `package.json` and `.pm` file required
 - Uses Template Toolkit for all UI components
+- GitHub Actions handles automated releases when tags are pushed
+- Comprehensive CI testing across multiple Koha versions (main, stable, oldstable)
