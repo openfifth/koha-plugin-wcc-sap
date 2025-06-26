@@ -243,7 +243,8 @@ sub _generate_report {
         my $costcenter;
         while ( my $line = $orders->next ) {
             my $unitprice = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
-            $invoice_total = $invoice_total + $unitprice;
+            my $quantity = $line->quantity || 1;
+            $invoice_total = $invoice_total + ($unitprice * $quantity);
             my $tax_value_on_receiving = Koha::Number::Price->new( $line->tax_value_on_receiving )->round * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
             my $tax_rate_on_receiving = $line->tax_rate_on_receiving * 100;
@@ -252,29 +253,33 @@ sub _generate_report {
               : $tax_rate_on_receiving == 5  ? 'P2'
               : $tax_rate_on_receiving == 0  ? 'P3'
               :                                '';
-            $lines .= "\n" . "GL" . ","
-              . $self->_map_fund_to_suppliernumber($line->budget->budget_code) . ","
-              . $invoice->invoicenumber . ","
-              . $unitprice . ","
-              . ","
-              . $tax_code . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . $self->_map_fund_to_costcenter($line->budget->budget_code) . ","
-              . $invoice->invoicenumber . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ","
-              . ",";
+
+            # Generate one GL line per quantity unit
+            for my $qty_unit (1..$quantity) {
+                $lines .= "\n" . "GL" . ","
+                  . $self->_map_fund_to_suppliernumber($line->budget->budget_code) . ","
+                  . $invoice->invoicenumber . ","
+                  . $unitprice . ","
+                  . ","
+                  . $tax_code . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . $self->_map_fund_to_costcenter($line->budget->budget_code) . ","
+                  . $invoice->invoicenumber . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ","
+                  . ",";
+            }
 
             $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
             $costcenter = $self->_map_fund_to_costcenter($line->budget->budget_code);
