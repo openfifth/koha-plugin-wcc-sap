@@ -19,7 +19,14 @@ This is a Koha plugin for SAP finance integration that enables invoice export to
 
 ## Development Commands
 
-### Release Management
+### Release Management (Modern Approach)
+```bash
+npm run release:patch    # For bug fixes (0.0.7 → 0.0.8)
+npm run release:minor    # For new features (0.0.7 → 0.1.0)
+npm run release:major    # For breaking changes (0.0.7 → 1.0.0)
+```
+
+### Legacy Release Management
 ```bash
 npm run release
 # Equivalent to: bash ./release_kpz.sh
@@ -31,10 +38,23 @@ Creates a .kpz plugin file, validates version updates, commits changes, creates 
 zip -r koha-plugin-sap.kpz Koha/
 ```
 
+### Version Management
+```bash
+npm run version:patch   # Update package.json version (patch)
+npm run version:minor   # Update package.json version (minor)
+npm run version:major   # Update package.json version (major)
+```
+
 ### Version Checking
 ```bash
 node checkVersionNumber.js version    # Get current version
 node checkVersionNumber.js filename   # Get plugin filename
+```
+
+### Testing
+```bash
+prove t/                # Run test suite
+prove t/00-load.t      # Run specific test
 ```
 
 ### Remote Validation
@@ -66,10 +86,25 @@ node checkRemotes.js check $(git remote -v)
 - Supports multiple transport methods (SFTP, etc.)
 - Configurable upload paths: `IN/LB01/WK/{filename}`
 
+## GitHub Actions Automation
+
+### Automated Release Process
+- GitHub Actions workflow (`.github/workflows/main.yml`) triggers on:
+  - Pushes to `main` branch
+  - Git tags matching `v*` pattern
+- Automatically creates .kpz file and GitHub releases
+- Requires `contents: write` permissions
+
+### Workflow Steps
+1. Checkout code
+2. Extract version and filename from plugin
+3. Create GitHub release with .kpz file attached
+
 ## Development Notes
 
-- No test framework is currently configured (`"test": "echo \"Error: no test specified\" && exit 1"`)
-- Plugin packaging uses zip compression of the `Koha/` directory
-- Version updates must be done in the `.pm` file before release
+- Basic test framework configured in `t/` directory
+- Plugin packaging uses zip compression of the `Koha/` directory  
+- Version synchronization between `package.json` and `.pm` file required
 - Release script automatically excludes template repository remotes
 - Uses Template Toolkit for all UI components
+- GitHub Actions handles automated releases when tags are pushed
