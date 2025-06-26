@@ -13,7 +13,7 @@ A Koha plugin to manage finance integration with SAP for Westminster City Counci
 
 ## Installation
 
-1. Download the latest `.kpz` file from the [Releases](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/releases) page
+1. Download the latest `.kpz` file from the [Releases](https://github.com/openfifth/koha-plugin-wcc-sap/releases) page
 2. In Koha, go to Tools > Plugins
 3. Upload the `.kpz` file using the plugin upload feature
 4. Enable the plugin
@@ -51,6 +51,6 @@ For additional documentation, see the [docs/](docs/) directory:
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/PTFS-Europe/koha-plugin-wcc-sap/issues)
-- **Author**: PTFS Europe Ltd
+- **Issues**: [GitHub Issues](https://github.com/openfifth/koha-plugin-wcc-sap/issues)
+- **Author**: Open Fifth
 - **License**: GPL-3.0
