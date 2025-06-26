@@ -1,35 +1,35 @@
 {
-  "plugin": {
-    "module": "Koha::Plugin::Com::PTFSEurope::SAP",
-    "pm_path": "Koha/Plugin/Com/PTFSEurope/SAP.pm"
-  },
-  "version": "0.0.08",
-  "previous_version": "0.0.07",
-  "scripts": {
-    "version:patch": "node increment_version.js patch | cat",
-    "version:minor": "node increment_version.js minor | cat",
-    "version:major": "node increment_version.js major | cat",
-    "release:patch": "node increment_version.js patch | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags",
-    "release:minor": "node increment_version.js minor | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags",
-    "release:major": "node increment_version.js major | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags"
-  },
-  "name": "koha-plugin-wcc-sap",
-  "description": "A Koha plugin to manage finance integration with SAP for WCC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PTFS-Europe/koha-plugin-wcc-sap.git"
-  },
-  "author": "PTFS Europe Ltd",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/PTFS-Europe/koha-plugin-wcc-sap/issues"
-  },
-  "homepage": "https://github.com/PTFS-Europe/koha-plugin-wcc-sap#readme",
-  "keywords": [
-    "koha",
-    "plugin",
-    "sap",
-    "finance",
-    "integration"
-  ]
+    "name": "koha-plugin-wcc-sap",
+    "version": "0.0.9",
+    "previous_version": "0.0.08",
+    "description": "A Koha plugin to manage finance integration with SAP for WCC",
+    "plugin": {
+        "module": "Koha::Plugin::Com::OpenFifth::SAP",
+        "pm_path": "Koha/Plugin/Com/OpenFifth/SAP.pm"
+    },
+    "scripts": {
+        "version:patch": "node increment_version.js patch | cat",
+        "version:minor": "node increment_version.js minor | cat",
+        "version:major": "node increment_version.js major | cat",
+        "release:patch": "node increment_version.js patch | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags",
+        "release:minor": "node increment_version.js minor | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags",
+        "release:major": "node increment_version.js major | cat && git add . && git commit -m 'chore: bump version' && VERSION=$(node -p 'require(\"./package.json\").version') && git tag -a v$VERSION -m \"Release v$VERSION\" && git push origin main --follow-tags"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/openfifth/koha-plugin-wcc-sap.git"
+    },
+    "author": "Open Fifth",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/openfifth/koha-plugin-wcc-sap/issues"
+    },
+    "homepage": "https://github.com/openfifth/koha-plugin-wcc-sap#readme",
+    "keywords": [
+        "koha",
+        "plugin",
+        "sap",
+        "finance",
+        "integration"
+    ]
 }

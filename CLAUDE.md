@@ -10,8 +10,8 @@ This is a Koha plugin for SAP finance integration that enables invoice export to
 
 ### Plugin Structure
 
-- **Main Plugin File**: `Koha/Plugin/Com/PTFSEurope/SAP.pm` - Core plugin logic with version 0.0.08
-- **Templates**: Template Toolkit (`.tt`) files in `Koha/Plugin/Com/PTFSEurope/SAP/` for UI components:
+- **Main Plugin File**: `Koha/Plugin/Com/OpenFifth/SAP.pm` - Core plugin logic with version 0.0.08
+- **Templates**: Template Toolkit (`.tt`) files in `Koha/Plugin/Com/OpenFifth/SAP/` for UI components:
   - `configure.tt` - Plugin configuration interface
   - `report-step1.tt` - Initial report generation form
   - `report-step2-html.tt` - HTML report output
