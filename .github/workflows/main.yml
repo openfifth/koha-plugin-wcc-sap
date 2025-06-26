@@ -30,7 +30,9 @@ jobs:
       - name: Check out Koha
         run: |
           cd ..
-          git clone --branch ${{ steps.koha-version.outputs.current-branch-name }} --single-branch --depth 1 https://github.com/Koha-Community/Koha.git kohaclone
+          # Temporary override: use OpenFifth's 24.11.o5th branch which includes required fixes
+          # git clone --branch ${{ steps.koha-version.outputs.current-branch-name }} --single-branch --depth 1 https://github.com/Koha-Community/Koha.git kohaclone
+          git clone --branch 24.11.o5th --single-branch --depth 1 https://github.com/openfifth/koha.git kohaclone
 
       - name: Export additional variables needed by koha-testing-docker
         run: |
