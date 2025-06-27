@@ -11,7 +11,8 @@ use File::Spec;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 
-our $VERSION  = '0.0.09';
+our $VERSION = '0.0.09';
+
 our $metadata = {
     name => 'SAP Finance Integration',
 
