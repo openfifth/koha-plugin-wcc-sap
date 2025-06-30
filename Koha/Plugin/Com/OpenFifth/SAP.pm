@@ -250,7 +250,7 @@ sub _generate_report {
             # Determine which line this adjustment applies to (if any) from the note field
             my $adjustment_note = $adjustment->note || '';
             my $line_id_from_note = '';
-            if ($adjustment_note =~ /line_id:(\d+)/) {
+            if ($adjustment_note =~ /EDI Line: (\d+)/) {
                 $line_id_from_note = $1;
                 # Store adjustment for later insertion after the corresponding line
                 push @{$line_adjustments{$line_id_from_note}}, $adjustment;
