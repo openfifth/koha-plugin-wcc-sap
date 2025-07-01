@@ -11,14 +11,14 @@ use File::Spec;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 
-our $VERSION = '0.0.14';
+our $VERSION = '0.0.13';
 
 our $metadata = {
     name => 'SAP Finance Integration',
 
     author          => 'Open Fifth',
     date_authored   => '2024-11-15',
-    date_updated    => '2025-07-01',
+    date_updated    => '2025-06-30',
     minimum_version => '24.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
@@ -79,7 +79,7 @@ sub configure {
 
 sub cronjob_nightly {
     my ($self) = @_;
-    
+
     my $transport_days = $self->retrieve_data('transport_days');
     return unless $transport_days;
 
@@ -240,20 +240,20 @@ sub _generate_report {
         # Collect and categorize adjustments first
         my $adjustments = $invoice->_result->aqinvoice_adjustments;
         my $total_adjustments = 0;
-        my @general_adjustments = ();    # Adjustments without order references
-        my %order_adjustments = ();      # Adjustments with order numbers, keyed by ordernumber
-        
+        my @general_adjustments = ();  # Adjustments without line IDs
+        my %line_adjustments = ();     # Adjustments with line IDs, keyed by line ID
+
         while ( my $adjustment = $adjustments->next ) {
             my $adjustment_amount = Koha::Number::Price->new( $adjustment->adjustment )->round * 100;
             $total_adjustments += $adjustment_amount;
-            
-            # Determine which order this adjustment applies to from the note field
+
+            # Determine which line this adjustment applies to (if any) from the note field
             my $adjustment_note = $adjustment->note || '';
-            my $adjustment_ordernumber = '';
-            if ($adjustment_note =~ /Order #(\d+)/) {
-                $adjustment_ordernumber = $1;
-                # Store adjustment for later insertion after the corresponding order
-                push @{$order_adjustments{$adjustment_ordernumber}}, $adjustment;
+            my $line_id_from_note = '';
+            if ($adjustment_note =~ /EDI Line: (\d+)/) {
+                $line_id_from_note = $1;
+                # Store adjustment for later insertion after the corresponding line
+                push @{$line_adjustments{$line_id_from_note}}, $adjustment;
             } else {
                 # Store general adjustment for insertion at the top
                 push @general_adjustments, $adjustment;
@@ -264,7 +264,7 @@ sub _generate_report {
         my $generate_adjustment_line = sub {
             my ($adjustment) = @_;
             my $adjustment_amount = Koha::Number::Price->new( $adjustment->adjustment )->round * 100;
-            
+
             # Use the adjustment's budget if available, otherwise fallback to first order's budget
             my $adj_budget_code;
             if ($adjustment->budget_id) {
@@ -276,7 +276,7 @@ sub _generate_report {
             } else {
                 $adj_budget_code = '';  # No budget info available
             }
-            
+
             return "\n" . "GL" . ","
               . $self->_map_fund_to_suppliernumber($adj_budget_code) . ","
               . $invoice->invoicenumber . ","
@@ -307,12 +307,14 @@ sub _generate_report {
             $lines .= $generate_adjustment_line->($adjustment);
         }
 
-        # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
+        # Collect 'General Ledger lines' for orders, interleaving line-specific adjustments
         my $invoice_total = 0;
         my $tax_amount = 0;
         my $suppliernumber;
         my $costcenter;
+        my $line_item_number = 0;
         while ( my $line = $orders->next ) {
+            ++$line_item_number;
             my $unitprice = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
             my $quantity = $line->quantity || 1;
             $invoice_total = $invoice_total + ($unitprice * $quantity);
@@ -352,10 +354,10 @@ sub _generate_report {
                   . ",";
             }
 
-            # Add any adjustments that reference this order (handles split orders via parent_ordernumber)
-            my $parent_ordernumber = $line->parent_ordernumber;
-            if ($parent_ordernumber && exists $order_adjustments{$parent_ordernumber}) {
-                for my $adjustment (@{$order_adjustments{$parent_ordernumber}}) {
+            # Add any adjustments that reference this specific line
+            #my $line_id = $line->line_item_number;
+            if (exists $line_adjustments{$line_item_number}) {
+                for my $adjustment (@{$line_adjustments{$line_item_number}}) {
                     $lines .= $generate_adjustment_line->($adjustment);
                 }
             }
@@ -363,7 +365,7 @@ sub _generate_report {
             $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
             $costcenter = $self->_map_fund_to_costcenter($line->budget->budget_code);
         }
-        
+
         # Add adjustments to invoice total
         $invoice_total += $total_adjustments;
 
