@@ -22,8 +22,7 @@ our $metadata = {
     minimum_version => '24.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
-    description     =>
-      'A plugin to manage finance integration for WCC with SAP',
+    description => 'A plugin to manage finance integration for WCC with SAP',
 };
 
 sub new {
@@ -47,11 +46,12 @@ sub configure {
 
         ## Grab the values we already have for our settings, if any exist
         my $available_transports = Koha::File::Transports->search();
-        my @days_of_week = qw(sunday monday tuesday wednesday thursday friday saturday);
+        my @days_of_week =
+          qw(sunday monday tuesday wednesday thursday friday saturday);
         my $transport_days = {
-            map { $days_of_week[$_] => 1 }
+            map  { $days_of_week[$_] => 1 }
             grep { defined $days_of_week[$_] }
-            split(',', $self->retrieve_data('transport_days'))
+              split( ',', $self->retrieve_data('transport_days') )
         };
         $template->param(
             transport_server     => $self->retrieve_data('transport_server'),
@@ -65,7 +65,7 @@ sub configure {
     else {
         # Get selected days (returns an array from multiple checkboxes)
         my @selected_days = $cgi->multi_param('days');
-        my $days_str = join(',', sort { $a <=> $b } @selected_days);
+        my $days_str      = join( ',', sort { $a <=> $b } @selected_days );
         $self->store_data(
             {
                 transport_server => scalar $cgi->param('transport_server'),
@@ -79,12 +79,12 @@ sub configure {
 
 sub cronjob_nightly {
     my ($self) = @_;
-    
+
     my $transport_days = $self->retrieve_data('transport_days');
     return unless $transport_days;
 
     my @selected_days = sort { $a <=> $b } split( /,/, $transport_days );
-    my %selected_days = map { $_ => 1 } @selected_days;
+    my %selected_days = map  { $_ => 1 } @selected_days;
 
     # Get current day of the week (0=Sunday, ..., 6=Saturday)
     my $today = dt_from_string()->day_of_week % 7;
@@ -93,20 +93,24 @@ sub cronjob_nightly {
     my $output = $self->retrieve_data('output');
     my $transport;
     if ( $output eq 'upload' ) {
-        $transport = Koha::File::Transports->find($self->retrieve_data('transport_server'));
+        $transport = Koha::File::Transports->find(
+            $self->retrieve_data('transport_server') );
         return unless $transport;
     }
 
     # Find start date (previous selected day) and end date (today)
-    my $previous_day = max(grep { $_ < $today } @selected_days);  # Last selected before today
-    $previous_day //= $selected_days[-1]; # Wrap around to last one from previous week
+    my $previous_day =
+      max( grep { $_ < $today } @selected_days );   # Last selected before today
+    $previous_day //=
+      $selected_days[-1];    # Wrap around to last one from previous week
 
     # Calculate the start date (previous selected day) and end date (today)
     my $now = DateTime->now;
-    my $start_date = $now->clone->subtract(days => ($today - $previous_day) % 7);
-    my $end_date   = $now;
+    my $start_date =
+      $now->clone->subtract( days => ( $today - $previous_day ) % 7 );
+    my $end_date = $now;
 
-    my $report = $self->_generate_report($start_date, $end_date, 1);
+    my $report = $self->_generate_report( $start_date, $end_date, 1 );
     return if !$report;
     my $filename = $self->_generate_filename();
     my $filepath = "IN/LB01/WK/" . $filename;
@@ -114,17 +118,20 @@ sub cronjob_nightly {
     if ( $output eq 'upload' ) {
         $transport->connect;
         open my $fh, '<', \$report;
-        if ( $transport->upload_file($fh, $filepath) ) {
+        if ( $transport->upload_file( $fh, $filepath ) ) {
             close $fh;
             return 1;
-        } else {
+        }
+        else {
             # Deal with transport errors?
             close $fh;
             return 0;
         }
-    } else {
-        my $file_path = File::Spec->catfile($self->bundle_path, 'output', $filename);
-        open(my $fh, '>', $file_path) or die "Unable to open $file_path: $!";
+    }
+    else {
+        my $file_path =
+          File::Spec->catfile( $self->bundle_path, 'output', $filename );
+        open( my $fh, '>', $file_path ) or die "Unable to open $file_path: $!";
         print $fh $report;
         close($fh);
         return 1;
@@ -147,8 +154,12 @@ sub report_step1 {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
-    my $startdate = $cgi->param('startdate') ? dt_from_string($cgi->param('startdate')) : undef;
-    my $enddate   = $cgi->param('enddate') ? dt_from_string($cgi->param('enddate')) : undef;
+    my $startdate =
+      $cgi->param('startdate')
+      ? dt_from_string( $cgi->param('startdate') )
+      : undef;
+    my $enddate =
+      $cgi->param('enddate') ? dt_from_string( $cgi->param('enddate') ) : undef;
 
     my $template = $self->get_template( { file => 'report-step1.tt' } );
     $template->param(
@@ -162,7 +173,7 @@ sub report_step1 {
 sub report_step2 {
     my ( $self, $args ) = @_;
 
-    my $cgi = $self->{'cgi'};
+    my $cgi       = $self->{'cgi'};
     my $startdate = $cgi->param('from');
     my $enddate   = $cgi->param('to');
     my $output    = $cgi->param('output');
@@ -179,7 +190,7 @@ sub report_step2 {
         $enddate = eval { dt_from_string($enddate) };
     }
 
-    my $results = $self->_generate_report($startdate, $enddate);
+    my $results = $self->_generate_report( $startdate, $enddate );
 
     my $templatefile;
     if ( $output eq "txt" ) {
@@ -428,9 +439,9 @@ sub _generate_report {
 }
 
 sub _generate_filename {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
-    my $filename = "WC_LB01_" . dt_from_string()->strftime('%Y%m%d%H%M%S');
+    my $filename  = "WC_LB01_" . dt_from_string()->strftime('%Y%m%d%H%M%S');
     my $extension = ".txt";
 
     return $filename . $extension;
