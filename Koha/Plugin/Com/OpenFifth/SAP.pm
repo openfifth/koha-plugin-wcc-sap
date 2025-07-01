@@ -240,20 +240,20 @@ sub _generate_report {
         # Collect and categorize adjustments first
         my $adjustments = $invoice->_result->aqinvoice_adjustments;
         my $total_adjustments = 0;
-        my @general_adjustments = ();  # Adjustments without line IDs
-        my %line_adjustments = ();     # Adjustments with line IDs, keyed by line ID
+        my @general_adjustments = ();    # Adjustments without order references
+        my %order_adjustments = ();      # Adjustments with order numbers, keyed by ordernumber
         
         while ( my $adjustment = $adjustments->next ) {
             my $adjustment_amount = Koha::Number::Price->new( $adjustment->adjustment )->round * 100;
             $total_adjustments += $adjustment_amount;
             
-            # Determine which line this adjustment applies to (if any) from the note field
+            # Determine which order this adjustment applies to from the note field
             my $adjustment_note = $adjustment->note || '';
-            my $line_id_from_note = '';
-            if ($adjustment_note =~ /EDI Line: (\d+)/) {
-                $line_id_from_note = $1;
-                # Store adjustment for later insertion after the corresponding line
-                push @{$line_adjustments{$line_id_from_note}}, $adjustment;
+            my $adjustment_ordernumber = '';
+            if ($adjustment_note =~ /Order #(\d+)/) {
+                $adjustment_ordernumber = $1;
+                # Store adjustment for later insertion after the corresponding order
+                push @{$order_adjustments{$adjustment_ordernumber}}, $adjustment;
             } else {
                 # Store general adjustment for insertion at the top
                 push @general_adjustments, $adjustment;
@@ -307,7 +307,7 @@ sub _generate_report {
             $lines .= $generate_adjustment_line->($adjustment);
         }
 
-        # Collect 'General Ledger lines' for orders, interleaving line-specific adjustments
+        # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
         my $invoice_total = 0;
         my $tax_amount = 0;
         my $suppliernumber;
@@ -352,10 +352,10 @@ sub _generate_report {
                   . ",";
             }
 
-            # Add any adjustments that reference this specific line
-            my $line_id = $line->ordernumber;
-            if (exists $line_adjustments{$line_id}) {
-                for my $adjustment (@{$line_adjustments{$line_id}}) {
+            # Add any adjustments that reference this order (handles split orders via parent_ordernumber)
+            my $parent_ordernumber = $line->parent_ordernumber;
+            if ($parent_ordernumber && exists $order_adjustments{$parent_ordernumber}) {
+                for my $adjustment (@{$order_adjustments{$parent_ordernumber}}) {
                     $lines .= $generate_adjustment_line->($adjustment);
                 }
             }
