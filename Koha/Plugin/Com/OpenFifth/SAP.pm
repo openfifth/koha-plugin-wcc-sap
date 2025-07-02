@@ -480,7 +480,7 @@ sub _map_fund_to_costcenter {
         WSSS   => "W26315",
         WVAT   => "W26315",
         WWML   => "W26352",
-        WYAD   => ''
+        WYAD   => "W26315"
     };
     my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
     return $return;
@@ -519,7 +519,7 @@ sub _map_fund_to_suppliernumber {
         WSSS   => 4539,
         WVAT   => 4539,
         WWML   => 4539,
-        WYAD   => ''
+        WYAD   => 4539
     };
     my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
     return $return;
