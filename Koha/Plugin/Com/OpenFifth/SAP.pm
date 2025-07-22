@@ -293,7 +293,7 @@ sub _generate_report {
               . $invoice->invoicenumber . ","
               . $adjustment_amount . ","
               . ","
-              . "P1,"  # Fixed tax code for adjustments
+              . "P3,"  # Fixed tax code for adjustments
               . ","
               . ","
               . ","
