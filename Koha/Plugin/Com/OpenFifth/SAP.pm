@@ -218,7 +218,6 @@ sub report_step2 {
 sub _generate_report {
     my ( $self, $startdate, $enddate, $cron ) = @_;
 
-    my $dbh   = C4::Context->dbh;
     my $where = { 'booksellerid.name' => { 'LIKE' => 'WCC%' } };
 
     my $dtf           = Koha::Database->new->schema->storage->datetime_parser;
@@ -363,12 +362,14 @@ sub _generate_report {
                   . ",";
             }
 
-            # Add any adjustments that reference this order (handles split orders via parent_ordernumber)
-            my $parent_ordernumber = $line->parent_ordernumber;
-            if ($parent_ordernumber && exists $order_adjustments{$parent_ordernumber}) {
-                for my $adjustment (@{$order_adjustments{$parent_ordernumber}}) {
+            # Add any adjustments that reference this order
+            my $current_ordernumber = $line->ordernumber;
+            if (exists $order_adjustments{$current_ordernumber}) {
+                for my $adjustment (@{$order_adjustments{$current_ordernumber}}) {
                     $lines .= $generate_adjustment_line->($adjustment);
                 }
+                # Remove processed adjustments to avoid duplicates
+                delete $order_adjustments{$current_ordernumber};
             }
 
             $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
