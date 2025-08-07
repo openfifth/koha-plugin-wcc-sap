@@ -10,43 +10,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Improve adjustment matching logic for split orders to work with enhanced Koha core adjustment creation
+
+## [0.0.18] - 2025-07-22
+
+### Fixed
+
 - Correct fixed tax code for service charges (P3 instead of P1 for 0% tax)
+
+## [0.0.17] - 2025-07-03
+
+### Fixed
+
+- Add fixed tax code for service charges
+
+## [0.0.16] - 2025-07-02
 
 ### Added
 
 - Support for WYAD fund mapping to cost center and supplier number
 
-## [0.0.09] - 2024-12-26
+## [0.0.15] - 2025-07-01
 
 ### Changed
 
-- Modernized plugin structure with auto-release template integration
-- Added GitHub Actions workflow for automated testing and releases
-- Implemented proper version synchronization between package.json and plugin file
-- Added comprehensive testing framework structure
-- Restructured documentation following GitHub best practices
+- Code tidying and maintenance (excluding _generate_report function)
+
+## [0.0.14] - 2025-07-01
+
+### Fixed
+
+- Improve split order handling for invoice adjustments
+
+## [0.0.13] - 2025-06-30
 
 ### Added
 
-- CONTRIBUTING.md with development guidelines
-- docs/ directory with organized documentation
-- Automated KPZ file creation via GitHub Actions
-- Real Koha testing against multiple versions (main, stable, oldstable)
+- Invoice adjustments support in SAP report generation
 
-## [0.0.08] - 2024-12-26
+### Fixed
+
+- Update adjustment line ID extraction to use EDI Line number
+
+## [0.0.12] - 2025-06-27
+
+### Changed
+
+- Add package-lock.json for dependency management
+
+## [0.0.11] - 2025-06-27
+
+### Changed
+
+- Rebrand from PTFS Europe to Open Fifth
+- Update CI to use OpenFifth WCC Koha branch for testing
+- Fix version string handling
+
+## [0.0.10] - 2025-06-26
+
+### Changed
+
+- Modernize plugin structure with auto-release template integration
+- Rebrand from PTFS Europe to Open Fifth
+
+## [0.0.9] - 2025-06-26
 
 ### Fixed
 
 - Generate one GL line per quantity unit instead of single line per order
-- Fix invoice total calculation to account for quantity × unitprice
-- Remove FIXME comment as quantity is now properly handled
+- Allow cron to die silently when there are no invoices to process
 
 ### Changed
 
-- Each quantity unit now generates separate GL line in SAP export
-- Improved accuracy of financial reporting for multi-quantity orders
+- Modernize plugin structure with auto-release template integration
+- Rebrand from PTFS Europe to Open Fifth
+
+## [0.0.8] - 2025-06-26
+
+### Fixed
+
+- Generate one GL line per quantity unit instead of single line per order
+
+### Changed
+
+- Rebrand from PTFS Europe to Open Fifth
+- Modernize plugin structure with auto-release template integration
 
 ## [0.0.07] - 2024-11-15
+
+### Fixed
+
+- Make unitprice tax inclusive
+
+## [0.0.06] - 2024-11-15
+
+### Fixed
+
+- Correct newline handling in output formatting
+
+## [0.0.05] - 2024-11-15
+
+### Fixed
+
+- Fix newline logic in report generation
+
+## [0.0.04] - 2024-11-15
+
+### Changed
+
+- Alter newline logic for better formatting
+
+## [0.0.03] - 2024-11-15
+
+### Fixed
+
+- Blank 'statistical' field in output
+
+## [0.0.02] - 2024-11-15
+
+### Fixed
+
+- Correct mappings for WCC/SAP integration
+
+## [0.0.01] - 2024-11-15
 
 ### Added
 
@@ -57,8 +142,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.09...HEAD
-[0.0.09]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.08...v0.0.09
-[0.0.08]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.07...v0.0.08
-[0.0.07]: https://github.com/openfifth/koha-plugin-wcc-sap/releases/tag/v0.0.07
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.18...HEAD
+[0.0.18]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.17...v0.0.18
+[0.0.17]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.16...v0.0.17
+[0.0.16]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.15...v0.0.16
+[0.0.15]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.14...v0.0.15
+[0.0.14]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.13...v0.0.14
+[0.0.13]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.12...v0.0.13
+[0.0.12]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.11...v0.0.12
+[0.0.11]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.10...v0.0.11
+[0.0.10]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.9...v0.0.10
+[0.0.9]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.8...v0.0.9
+[0.0.8]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.7...v0.0.8
+[0.0.7]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.6...v0.0.7
+[0.0.6]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.5...v0.0.6
+[0.0.5]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.4...v0.0.5
+[0.0.4]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.3...v0.0.4
+[0.0.3]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.2...v0.0.3
+[0.0.2]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.01...v0.0.2
+[0.0.01]: https://github.com/openfifth/koha-plugin-wcc-sap/releases/tag/v0.0.01
 
