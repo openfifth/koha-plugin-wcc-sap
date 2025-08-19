@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
+- Text::CSV integration for proper CSV formatting and validation
+- Robust CSV generation with correct escaping of special characters
+- Enhanced download functionality with standards-compliant CSV output
 
+### Changed
+- Replace manual string concatenation with Text::CSV writer
+- Convert CSV rows to array references for better maintainability
+- Improve code structure and standards compliance
+### Fixed
 - Improve adjustment matching logic for split orders to work with enhanced Koha core adjustment creation
+- Proper handling of quotes, commas, and special characters in CSV output
 
 ## [0.0.18] - 2025-07-22
 
