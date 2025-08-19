@@ -211,9 +211,104 @@ sub report_step2 {
         startdate => dt_from_string($startdate),
         enddate   => dt_from_string($enddate),
         results   => $results,
+        filename  => $self->_generate_filename(),
+        output_config => $self->retrieve_data('output'),
+        CLASS     => ref($self),
     );
 
     print $template->output();
+}
+
+sub sftp_upload {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    my $startdate = $cgi->param('from');
+    my $enddate   = $cgi->param('to');
+
+    # Parse dates
+    if ($startdate) {
+        $startdate =~ s/^\s+//;
+        $startdate =~ s/\s+$//;
+        $startdate = eval { dt_from_string($startdate) };
+    }
+
+    if ($enddate) {
+        $enddate =~ s/^\s+//;
+        $enddate =~ s/\s+$//;
+        $enddate = eval { dt_from_string($enddate) };
+    }
+
+    # Check output configuration - if set to upload, use transport
+    my $output = $self->retrieve_data('output');
+    
+    if ($output eq 'upload') {
+        # Get transport configuration
+        my $transport = Koha::File::Transports->find( $self->retrieve_data('transport_server') );
+
+        unless ($transport) {
+            print $cgi->header('application/json');
+            print '{"success": false, "message": "No SFTP transport configured"}';
+            return;
+        }
+
+        # Generate report
+        my $filename = $self->_generate_filename();
+        my $filepath = "IN/LB01/WK/" . $filename;
+        my $report = $self->_generate_report( $startdate, $enddate );
+
+        unless ($report) {
+            print $cgi->header('application/json');
+            print '{"success": false, "message": "Failed to generate report"}';
+            return;
+        }
+
+        # Upload to SFTP
+        eval {
+            $transport->connect;
+            open my $fh, '<', \$report;
+            my $upload_result = $transport->upload_file( $fh, $filepath );
+            close $fh;
+
+            if ($upload_result) {
+                print $cgi->header('application/json');
+                print '{"success": true, "message": "File uploaded successfully to SFTP server", "filename": "' . $filename . '"}';
+            } else {
+                print $cgi->header('application/json');
+                print '{"success": false, "message": "Failed to upload file to SFTP server"}';
+            }
+        };
+
+        if ($@) {
+            print $cgi->header('application/json');
+            print '{"success": false, "message": "SFTP upload error: ' . $@ . '"}';
+        }
+    } else {
+        # Save to local file
+        my $filename = $self->_generate_filename();
+        my $report = $self->_generate_report( $startdate, $enddate );
+        
+        unless ($report) {
+            print $cgi->header('application/json');
+            print '{"success": false, "message": "Failed to generate report"}';
+            return;
+        }
+        
+        my $file_path = File::Spec->catfile( $self->bundle_path, 'output', $filename );
+        eval {
+            open( my $fh, '>', $file_path ) or die "Unable to open $file_path: $!";
+            print $fh $report;
+            close($fh);
+            
+            print $cgi->header('application/json');
+            print '{"success": true, "message": "File saved successfully to server", "filename": "' . $filename . '"}';
+        };
+        
+        if ($@) {
+            print $cgi->header('application/json');
+            print '{"success": false, "message": "Error saving file: ' . $@ . '"}';
+        }
+    }
 }
 
 sub _generate_report {

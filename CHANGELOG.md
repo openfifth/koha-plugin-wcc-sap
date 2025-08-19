@@ -8,17 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Text::CSV integration for proper CSV formatting and validation
 - Robust CSV generation with correct escaping of special characters
 - Enhanced download functionality with standards-compliant CSV output
+- New `sftp_upload` method with configuration-aware upload/save logic
+- Modern Bootstrap UI with cards, badges, and professional styling
+- AJAX upload/save functionality with loading states and error handling
+- Smart buttons that adapt to configuration (SFTP upload vs local save)
+- Scrollable report preview with monospace formatting
+- Dynamic button labels based on output configuration
 
 ### Changed
+
 - Replace manual string concatenation with Text::CSV writer
 - Convert CSV rows to array references for better maintainability
 - Improve code structure and standards compliance
+- Enhanced report template with modern design patterns
+- Update UI with WCC branding and improved visual feedback
+- Improve user experience with better visual feedback
+
 ### Fixed
+
 - Improve adjustment matching logic for split orders to work with enhanced Koha core adjustment creation
 - Proper handling of quotes, commas, and special characters in CSV output
+- Enhanced error handling with user-friendly messages
+- Better template parameter passing for UI functionality
 
 ## [0.0.18] - 2025-07-22
 
