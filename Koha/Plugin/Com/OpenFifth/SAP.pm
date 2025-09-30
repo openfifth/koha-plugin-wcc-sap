@@ -396,14 +396,14 @@ sub _generate_report {
             }
             
             return [
-                "GL",                                                   # 1
+                "GL",                                                  # 1
                 $self->_map_fund_to_suppliernumber($adj_budget_code),  # 2
                 $invoice->invoicenumber,                               # 3
                 $adjustment_amount,                                    # 4
                 "",                                                    # 5
                 "P3",                                                  # 6 Fixed tax code for adjustments
-                "", "", "", "", "",                                   # 7-11
-                $self->_map_fund_to_costcenter($adj_budget_code),     # 12
+                "", "", "", "", "",                                    # 7-11
+                $self->_map_fund_to_costcenter($adj_budget_code),      # 12
                 $invoice->invoicenumber,                               # 13
                 "", "", "", "", "", "", "", "", "", "", "", ""         # 14-25
             ];
@@ -420,9 +420,10 @@ sub _generate_report {
         my $suppliernumber;
         my $costcenter;
         while ( my $line = $orders->next ) {
-            my $unitprice = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
+            my $unitprice_tax_included = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
+            my $unitprice_tax_excluded = Koha::Number::Price->new( $line->unitprice_tax_excluded )->round * 100;
             my $quantity = $line->quantity || 1;
-            $invoice_total = $invoice_total + ($unitprice * $quantity);
+            $invoice_total = $invoice_total + ($unitprice_tax_excluded * $quantity);
             my $tax_value_on_receiving = Koha::Number::Price->new( $line->tax_value_on_receiving )->round * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
             my $tax_rate_on_receiving = $line->tax_rate_on_receiving * 100;
@@ -435,16 +436,16 @@ sub _generate_report {
             # Generate one GL row per quantity unit
             for my $qty_unit (1..$quantity) {
                 push @all_rows, [
-                    "GL",                                               # 1
+                    "GL",                                                           # 1
                     $self->_map_fund_to_suppliernumber($line->budget->budget_code), # 2
-                    $invoice->invoicenumber,                           # 3
-                    $unitprice,                                        # 4
-                    "",                                                # 5
-                    $tax_code,                                         # 6
-                    "", "", "", "", "",                               # 7-11
-                    $self->_map_fund_to_costcenter($line->budget->budget_code), # 12
-                    $invoice->invoicenumber,                           # 13
-                    "", "", "", "", "", "", "", "", "", "", "", ""     # 14-25
+                    $invoice->invoicenumber,                                        # 3
+                    $unitprice_tax_included,                                        # 4
+                    "",                                                             # 5
+                    $tax_code,                                                      # 6
+                    "", "", "", "", "",                                             # 7-11
+                    $self->_map_fund_to_costcenter($line->budget->budget_code),     # 12
+                    $invoice->invoicenumber,                                        # 13
+                    "", "", "", "", "", "", "", "", "", "", "", ""                  # 14-25
                 ];
             }
 
