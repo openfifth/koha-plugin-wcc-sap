@@ -423,7 +423,7 @@ sub _generate_report {
             my $unitprice_tax_included = Koha::Number::Price->new( $line->unitprice_tax_included )->round * 100;
             my $unitprice_tax_excluded = Koha::Number::Price->new( $line->unitprice_tax_excluded )->round * 100;
             my $quantity = $line->quantity || 1;
-            $invoice_total = $invoice_total + ($unitprice_tax_excluded * $quantity);
+            $invoice_total = $invoice_total + ($unitprice_tax_included * $quantity);
             my $tax_value_on_receiving = Koha::Number::Price->new( $line->tax_value_on_receiving )->round * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
             my $tax_rate_on_receiving = $line->tax_rate_on_receiving * 100;
@@ -439,7 +439,7 @@ sub _generate_report {
                     "GL",                                                           # 1
                     $self->_map_fund_to_suppliernumber($line->budget->budget_code), # 2
                     $invoice->invoicenumber,                                        # 3
-                    $unitprice_tax_included,                                        # 4
+                    $unitprice_tax_excluded,                                        # 4
                     "",                                                             # 5
                     $tax_code,                                                      # 6
                     "", "", "", "", "",                                             # 7-11
