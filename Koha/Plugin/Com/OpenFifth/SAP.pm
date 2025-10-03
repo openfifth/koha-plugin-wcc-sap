@@ -363,9 +363,25 @@ sub _generate_report {
         my %order_adjustments = ();      # Adjustments with order numbers, keyed by ordernumber
         
         while ( my $adjustment = $adjustments->next ) {
-            my $adjustment_amount = Koha::Number::Price->new( $adjustment->adjustment )->round * 100;
-            $total_adjustments += $adjustment_amount;
-            
+            my $adjustment_amount = Koha::Number::Price->new( $adjustment->adjustment )->round;
+
+            # For AP total, we always need tax-included amounts
+            # Parse tax rate from adjustment note to calculate tax-included amount
+            my $note = $adjustment->note || '';
+            my $tax_rate_pct = 0;
+            if ( $note =~ /Tax Rate: (\d+)%/ ) {
+                $tax_rate_pct = $1;
+            }
+
+            my $adjustment_amount_inc = $adjustment_amount;
+            if ( !C4::Context->preference('CalculateFundValuesIncludingTax') && $tax_rate_pct > 0 ) {
+                # Adjustment is tax-excluded, add tax to get tax-included for AP total
+                $adjustment_amount_inc = $adjustment_amount * ( 1 + ( $tax_rate_pct / 100 ) );
+            }
+
+            # Convert to pence for total calculation
+            $total_adjustments += $adjustment_amount_inc * 100;
+
             # Determine which order this adjustment applies to from the note field
             my $adjustment_note = $adjustment->note || '';
             my $adjustment_ordernumber = '';
