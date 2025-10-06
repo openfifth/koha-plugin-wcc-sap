@@ -422,8 +422,8 @@ sub _generate_report {
                 $adjustment_amount_excl = $adjustment_amount / ( 1 + ( $tax_rate_pct / 100 ) );
             }
 
-            # Convert to pence
-            $adjustment_amount_excl = $adjustment_amount_excl * 100;
+            # Convert to pence and round to integer
+            $adjustment_amount_excl = sprintf( "%.0f", $adjustment_amount_excl * 100 );
 
             # Use the adjustment's budget if available, otherwise fallback to first order's budget
             my $adj_budget_code;
