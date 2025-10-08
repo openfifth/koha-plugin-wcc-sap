@@ -13,14 +13,14 @@ use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 use Text::CSV;
 
-our $VERSION = '0.0.25';
+our $VERSION = '0.0.26';
 
 our $metadata = {
     name => 'SAP Finance Integration',
 
     author          => 'Open Fifth',
     date_authored   => '2024-11-15',
-    date_updated    => '2025-10-06',
+    date_updated    => '2025-10-08',
     minimum_version => '24.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
