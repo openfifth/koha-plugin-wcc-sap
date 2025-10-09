@@ -355,6 +355,7 @@ sub _generate_report {
         $invoice_count++;
         my $lines  = "";
         my $orders = $invoice->_result->aqorders;
+        my @invoice_gl_rows = ();  # Temporary array for GL rows of this invoice
 
         # Collect and categorize adjustments first
         my $adjustments = $invoice->_result->aqinvoice_adjustments;
@@ -456,7 +457,7 @@ sub _generate_report {
 
         # Add general adjustments (no line ID) at the top
         for my $adjustment (@general_adjustments) {
-            push @all_rows, $generate_adjustment_row->($adjustment);
+            push @invoice_gl_rows, $generate_adjustment_row->($adjustment);
         }
 
         # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
@@ -483,7 +484,7 @@ sub _generate_report {
             # Generate one GL row per quantity unit
             for my $qty_unit (1..$quantity) {
                 $invoice_total += $unitprice_tax_included;
-                push @all_rows, [
+                push @invoice_gl_rows, [
                     "GL",                                                           # 1
                     $self->_map_fund_to_suppliernumber($line->budget->budget_code), # 2
                     $invoice->invoicenumber,                                        # 3
@@ -501,7 +502,7 @@ sub _generate_report {
             my $current_ordernumber = $line->ordernumber;
             if (exists $order_adjustments{$current_ordernumber}) {
                 for my $adjustment (@{$order_adjustments{$current_ordernumber}}) {
-                    push @all_rows, $generate_adjustment_row->($adjustment);
+                    push @invoice_gl_rows, $generate_adjustment_row->($adjustment);
                 }
                 # Remove processed adjustments to avoid duplicates
                 delete $order_adjustments{$current_ordernumber};
@@ -514,7 +515,7 @@ sub _generate_report {
         # Add adjustments to invoice total
         $invoice_total += $total_adjustments;
 
-        # Add 'Accounts Payable row'
+        # Add 'Accounts Payable row' BEFORE GL rows (required by Basware)
         $invoice_total = $invoice_total * -1;
         $overall_total = $overall_total + $invoice_total;
 
@@ -534,6 +535,9 @@ sub _generate_report {
             "", "", "", "", "", "", "", "", "", "", "",         # 14-24
             $invoice->_result->booksellerid->fax                   # 25
         ];
+
+        # Now add all GL rows for this invoice after the AP row
+        push @all_rows, @invoice_gl_rows;
     }
 
     # Add 'Control Total row' at the beginning
