@@ -429,6 +429,9 @@ sub _generate_report {
             $adjustment_amount_excl =
               Koha::Number::Price->new($adjustment_amount_excl)->round * 100;
 
+            # Skip £0 adjustments - SAP/Basware doesn't allow 0 values on GL lines (ticket 149681)
+            return if $adjustment_amount_excl == 0;
+
             # Add to GL sum for accurate AP calculation
             $$gl_sum_ref += $adjustment_amount_excl;
 
@@ -463,7 +466,8 @@ sub _generate_report {
 
         # Add general adjustments (no line ID) at the top
         for my $adjustment (@general_adjustments) {
-            push @invoice_gl_rows, $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+            my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+            push @invoice_gl_rows, $gl_row if $gl_row;
         }
 
         # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
@@ -508,7 +512,8 @@ sub _generate_report {
             my $current_ordernumber = $line->ordernumber;
             if (exists $order_adjustments{$current_ordernumber}) {
                 for my $adjustment (@{$order_adjustments{$current_ordernumber}}) {
-                    push @invoice_gl_rows, $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+                    my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+                    push @invoice_gl_rows, $gl_row if $gl_row;
                 }
                 # Remove processed adjustments to avoid duplicates
                 delete $order_adjustments{$current_ordernumber};
