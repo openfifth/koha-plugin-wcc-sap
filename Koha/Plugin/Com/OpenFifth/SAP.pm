@@ -399,7 +399,7 @@ sub _generate_report {
 
         # Helper function to generate adjustment GL row
         my $generate_adjustment_row = sub {
-            my ($adjustment) = @_;
+            my ($adjustment, $gl_sum_ref) = @_;
             # Keep full precision - don't round yet (Round Last principle)
             my $adjustment_amount = $adjustment->adjustment;
 
@@ -429,6 +429,9 @@ sub _generate_report {
             $adjustment_amount_excl =
               Koha::Number::Price->new($adjustment_amount_excl)->round * 100;
 
+            # Add to GL sum for accurate AP calculation
+            $$gl_sum_ref += $adjustment_amount_excl;
+
             # Use the adjustment's budget if available, otherwise fallback to first order's budget
             my $adj_budget_code;
             if ($adjustment->budget_id) {
@@ -455,23 +458,23 @@ sub _generate_report {
             ];
         };
 
+        # Track sum of rounded GL values for accurate AP calculation
+        my $gl_sum_rounded = 0;
+
         # Add general adjustments (no line ID) at the top
         for my $adjustment (@general_adjustments) {
-            push @invoice_gl_rows, $generate_adjustment_row->($adjustment);
+            push @invoice_gl_rows, $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
         }
 
         # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
-        my $invoice_total = 0;
         my $tax_amount = 0;
         my $suppliernumber;
         my $costcenter;
         while ( my $line = $orders->next ) {
             # Keep full precision - don't round yet (Round Last principle)
             # Values in pence but still full precision
-            my $unitprice_tax_included = $line->unitprice_tax_included * 100;
             my $unitprice_tax_excluded = $line->unitprice_tax_excluded * 100;
             my $quantity = $line->quantity || 1;
-            #$invoice_total = $invoice_total + ($unitprice_tax_included * $quantity);
             my $tax_value_on_receiving = $line->tax_value_on_receiving * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
             my $tax_rate_on_receiving = $line->tax_rate_on_receiving * 100;
@@ -483,12 +486,15 @@ sub _generate_report {
 
             # Generate one GL row per quantity unit
             for my $qty_unit (1..$quantity) {
-                $invoice_total += $unitprice_tax_included;
+                # Round each GL line value and add to sum
+                my $rounded_gl_value = Koha::Number::Price->new($unitprice_tax_excluded / 100)->round * 100;
+                $gl_sum_rounded += $rounded_gl_value;
+
                 push @invoice_gl_rows, [
                     "GL",                                                           # 1
                     $self->_map_fund_to_suppliernumber($line->budget->budget_code), # 2
                     $invoice->invoicenumber,                                        # 3
-                    Koha::Number::Price->new($unitprice_tax_excluded / 100)->round * 100,  # 4 - HMRC round (Round Last)
+                    $rounded_gl_value,                                              # 4 - HMRC round (Round Last)
                     "",                                                             # 5
                     $tax_code,                                                      # 6
                     "", "", "", "", "",                                             # 7-11
@@ -502,7 +508,7 @@ sub _generate_report {
             my $current_ordernumber = $line->ordernumber;
             if (exists $order_adjustments{$current_ordernumber}) {
                 for my $adjustment (@{$order_adjustments{$current_ordernumber}}) {
-                    push @invoice_gl_rows, $generate_adjustment_row->($adjustment);
+                    push @invoice_gl_rows, $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
                 }
                 # Remove processed adjustments to avoid duplicates
                 delete $order_adjustments{$current_ordernumber};
@@ -511,9 +517,11 @@ sub _generate_report {
             $suppliernumber = $self->_map_fund_to_suppliernumber($line->budget->budget_code);
             $costcenter = $self->_map_fund_to_costcenter($line->budget->budget_code);
         }
-        
-        # Add adjustments to invoice total
-        $invoice_total += $total_adjustments;
+
+        # Calculate invoice total from sum of rounded GL values and rounded tax
+        # This ensures AP total = -(GL sum + Tax)
+        my $tax_amount_rounded = Koha::Number::Price->new($tax_amount / 100)->round * 100;
+        my $invoice_total = $gl_sum_rounded + $tax_amount_rounded;
 
         # Add 'Accounts Payable row' BEFORE GL rows (required by Basware)
         $invoice_total = $invoice_total * -1;
@@ -524,8 +532,8 @@ sub _generate_report {
             $invoice->_result->booksellerid->accountnumber,         # 2
             $invoice->invoicenumber,                               # 3
             ($invoice->closedate =~ s/-//gr),                      # 4
-            Koha::Number::Price->new($invoice_total / 100)->round * 100,  # 5 - HMRC round (Round Last)
-            Koha::Number::Price->new($tax_amount / 100)->round * 100,     # 6 - HMRC round (Round Last)
+            $invoice_total,                                        # 5 - Already in integer pence (from rounded GL sum)
+            $tax_amount_rounded,                                   # 6 - Already in integer pence (rounded)
             $invoice->invoicenumber,                               # 7
             ($invoice->shipmentdate =~ s/-//gr),                   # 8
             $costcenter,                                           # 9
@@ -545,7 +553,7 @@ sub _generate_report {
     my $ct_row = [
         "CT",                                       # 1
         $invoice_count,                             # 2
-        Koha::Number::Price->new($overall_total / 100)->round * 100,  # 3 - HMRC round (Round Last)
+        $overall_total,                             # 3 - Already in integer pence (sum of rounded AP totals)
         "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" # 4-25
     ];
     
