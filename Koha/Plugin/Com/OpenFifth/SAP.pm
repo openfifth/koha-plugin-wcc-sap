@@ -399,7 +399,7 @@ sub _generate_report {
 
         # Helper function to generate adjustment GL row
         my $generate_adjustment_row = sub {
-            my ($adjustment, $gl_sum_ref) = @_;
+            my ($adjustment, $gl_sum_ref, $tax_sum_ref) = @_;
             # Keep full precision - don't round yet (Round Last principle)
             my $adjustment_amount = $adjustment->adjustment;
 
@@ -417,11 +417,13 @@ sub _generate_report {
               : $tax_rate_pct == 0  ? 'P3'
               :                       'P3';  # Default to P3 if unknown
 
-            # Calculate tax-exclusive amount based on CalculateFundValuesIncludingTax syspref
+            # Calculate tax-exclusive amount and tax value
             my $adjustment_amount_excl = $adjustment_amount;
+            my $adjustment_tax_value = 0;
             if ( C4::Context->preference('CalculateFundValuesIncludingTax') && $tax_rate_pct > 0 ) {
-                # Adjustment is tax-included, back-calculate to get tax-exclusive
+                # Adjustment is tax-included, back-calculate to get tax-exclusive and tax value
                 $adjustment_amount_excl = $adjustment_amount / ( 1 + ( $tax_rate_pct / 100 ) );
+                $adjustment_tax_value = $adjustment_amount - $adjustment_amount_excl;
             }
 
             # Round to nearest penny, then convert to integer pence (Round Last - only at output)
@@ -434,6 +436,9 @@ sub _generate_report {
 
             # Add to GL sum for accurate AP calculation
             $$gl_sum_ref += $adjustment_amount_excl;
+
+            # Add tax value to tax sum (in pence, full precision)
+            $$tax_sum_ref += $adjustment_tax_value * 100;
 
             # Use the adjustment's budget if available, otherwise fallback to first order's budget
             my $adj_budget_code;
@@ -463,15 +468,16 @@ sub _generate_report {
 
         # Track sum of rounded GL values for accurate AP calculation
         my $gl_sum_rounded = 0;
+        # Track tax amount (including from adjustments)
+        my $tax_amount = 0;
 
         # Add general adjustments (no line ID) at the top
         for my $adjustment (@general_adjustments) {
-            my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+            my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded, \$tax_amount);
             push @invoice_gl_rows, $gl_row if $gl_row;
         }
 
         # Collect 'General Ledger lines' for orders, interleaving order-specific adjustments
-        my $tax_amount = 0;
         my $suppliernumber;
         my $costcenter;
         while ( my $line = $orders->next ) {
@@ -512,7 +518,7 @@ sub _generate_report {
             my $current_ordernumber = $line->ordernumber;
             if (exists $order_adjustments{$current_ordernumber}) {
                 for my $adjustment (@{$order_adjustments{$current_ordernumber}}) {
-                    my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded);
+                    my $gl_row = $generate_adjustment_row->($adjustment, \$gl_sum_rounded, \$tax_amount);
                     push @invoice_gl_rows, $gl_row if $gl_row;
                 }
                 # Remove processed adjustments to avoid duplicates
