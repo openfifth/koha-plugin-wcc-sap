@@ -126,7 +126,8 @@ $(document).ready(function() {
             class: button.data('class'),
             method: 'sftp_upload',
             from: button.data('from'),
-            to: button.data('to')
+            to: button.data('to'),
+            csrf_token: '[% csrf_token %]'
         };
         
         // Make AJAX request
