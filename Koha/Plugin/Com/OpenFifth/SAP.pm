@@ -106,10 +106,14 @@ sub cronjob_nightly {
     $previous_day //=
       $selected_days[-1];    # Wrap around to last one from previous week
 
-    # Calculate the start date (previous selected day) and end date (today)
+    # Calculate the start date (day after previous selected day) and end date (today).
+    # We add 1 day so the range is (previous_run_day, today] rather than
+    # [previous_run_day, today], preventing invoices on the boundary date from
+    # appearing in two consecutive runs.
     my $now = DateTime->now;
     my $start_date =
-      $now->clone->subtract( days => ( $today - $previous_day ) % 7 );
+      $now->clone->subtract( days => ( $today - $previous_day ) % 7 )
+                 ->add( days => 1 );
     my $end_date = $now;
 
     my $report = $self->_generate_report( $start_date, $end_date, 1 );
@@ -418,12 +422,20 @@ sub _generate_report {
               :                       'P3';  # Default to P3 if unknown
 
             # Calculate tax-exclusive amount and tax value
-            my $adjustment_amount_excl = $adjustment_amount;
+            my $adjustment_amount_excl;
             my $adjustment_tax_value = 0;
-            if ( C4::Context->preference('CalculateFundValuesIncludingTax') && $tax_rate_pct > 0 ) {
+            if ( $note =~ /EDI_EXCL:\s*([\d.]+)/ ) {
+                # Use exact EDI tax-exclusive amount (from MOA+8) stored in note
+                $adjustment_amount_excl = $1;
+                $adjustment_tax_value = $adjustment_amount - $adjustment_amount_excl;
+            }
+            elsif ( C4::Context->preference('CalculateFundValuesIncludingTax') && $tax_rate_pct > 0 ) {
                 # Adjustment is tax-included, back-calculate to get tax-exclusive and tax value
                 $adjustment_amount_excl = $adjustment_amount / ( 1 + ( $tax_rate_pct / 100 ) );
                 $adjustment_tax_value = $adjustment_amount - $adjustment_amount_excl;
+            }
+            else {
+                $adjustment_amount_excl = $adjustment_amount;
             }
 
             # Round to nearest penny, then convert to integer pence (Round Last - only at output)
