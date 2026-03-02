@@ -224,96 +224,103 @@ sub report_step2 {
     print $template->output();
 }
 
-sub sftp_upload {
+sub api_namespace {
+    my ($self) = @_;
+
+    return 'sap';
+}
+
+sub api_routes {
     my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
 
-    my $startdate = $cgi->param('from');
-    my $enddate   = $cgi->param('to');
-
-    # Parse dates
-    if ($startdate) {
-        $startdate =~ s/^\s+//;
-        $startdate =~ s/\s+$//;
-        $startdate = eval { dt_from_string($startdate) };
-    }
-
-    if ($enddate) {
-        $enddate =~ s/^\s+//;
-        $enddate =~ s/\s+$//;
-        $enddate = eval { dt_from_string($enddate) };
-    }
-
-    # Check output configuration - if set to upload, use transport
-    my $output = $self->retrieve_data('output');
-    
-    if ($output eq 'upload') {
-        # Get transport configuration
-        my $transport = Koha::File::Transports->find( $self->retrieve_data('transport_server') );
-
-        unless ($transport) {
-            print $cgi->header('application/json');
-            print '{"success": false, "message": "No SFTP transport configured"}';
-            return;
-        }
-
-        # Generate report
-        my $filename = $self->_generate_filename();
-        my $filepath = "IN/LB01/WK/" . $filename;
-        my $report = $self->_generate_report( $startdate, $enddate );
-
-        unless ($report) {
-            print $cgi->header('application/json');
-            print '{"success": false, "message": "Failed to generate report"}';
-            return;
-        }
-
-        # Upload to SFTP
-        eval {
-            $transport->connect;
-            open my $fh, '<', \$report;
-            my $upload_result = $transport->upload_file( $fh, $filepath );
-            close $fh;
-
-            if ($upload_result) {
-                print $cgi->header('application/json');
-                print '{"success": true, "message": "File uploaded successfully to SFTP server", "filename": "' . $filename . '"}';
-            } else {
-                print $cgi->header('application/json');
-                print '{"success": false, "message": "Failed to upload file to SFTP server"}';
+    my $spec = {
+        "/upload" => {
+            "post" => {
+                "x-mojo-to" =>
+                  "Com::OpenFifth::SAP::UploadController#upload",
+                "operationId" => "SAPUpload",
+                "tags"        => ["sap"],
+                "parameters"  => [
+                    {
+                        "name"        => "from",
+                        "in"          => "formData",
+                        "description" => "Start date for report",
+                        "required"    => Mojo::JSON::true,
+                        "type"        => "string"
+                    },
+                    {
+                        "name"        => "to",
+                        "in"          => "formData",
+                        "description" => "End date for report",
+                        "required"    => Mojo::JSON::true,
+                        "type"        => "string"
+                    }
+                ],
+                "produces"  => ["application/json"],
+                "responses" => {
+                    "200" => {
+                        "description" => "Upload successful",
+                        "schema"      => {
+                            "type"       => "object",
+                            "properties" => {
+                                "success"  => { "type" => "boolean" },
+                                "message"  => { "type" => "string" },
+                                "filename" => { "type" => "string" }
+                            }
+                        }
+                    },
+                    "400" => {
+                        "description" => "Bad request",
+                        "schema"      => {
+                            "type"       => "object",
+                            "properties" => {
+                                "success" => { "type" => "boolean" },
+                                "message" => { "type" => "string" }
+                            }
+                        }
+                    },
+                    "500" => {
+                        "description" => "Internal server error",
+                        "schema"      => {
+                            "type"       => "object",
+                            "properties" => {
+                                "success" => { "type" => "boolean" },
+                                "message" => { "type" => "string" }
+                            }
+                        }
+                    },
+                    "502" => {
+                        "description" => "SFTP upload failed",
+                        "schema"      => {
+                            "type"       => "object",
+                            "properties" => {
+                                "success"      => { "type" => "boolean" },
+                                "message"      => { "type" => "string" },
+                                "error_detail" => { "type" => "object" }
+                            }
+                        }
+                    },
+                    "503" => {
+                        "description" => "SFTP transport not configured",
+                        "schema"      => {
+                            "type"       => "object",
+                            "properties" => {
+                                "success" => { "type" => "boolean" },
+                                "message" => { "type" => "string" }
+                            }
+                        }
+                    }
+                },
+                "x-koha-authorization" => {
+                    "permissions" => {
+                        "plugins" => "1"
+                    }
+                }
             }
-        };
+        }
+    };
 
-        if ($@) {
-            print $cgi->header('application/json');
-            print '{"success": false, "message": "SFTP upload error: ' . $@ . '"}';
-        }
-    } else {
-        # Save to local file
-        my $filename = $self->_generate_filename();
-        my $report = $self->_generate_report( $startdate, $enddate );
-        
-        unless ($report) {
-            print $cgi->header('application/json');
-            print '{"success": false, "message": "Failed to generate report"}';
-            return;
-        }
-        
-        my $file_path = File::Spec->catfile( $self->bundle_path, 'output', $filename );
-        eval {
-            open( my $fh, '>', $file_path ) or die "Unable to open $file_path: $!";
-            print $fh $report;
-            close($fh);
-            
-            print $cgi->header('application/json');
-            print '{"success": true, "message": "File saved successfully to server", "filename": "' . $filename . '"}';
-        };
-        
-        if ($@) {
-            print $cgi->header('application/json');
-            print '{"success": false, "message": "Error saving file: ' . $@ . '"}';
-        }
-    }
+    return $spec;
 }
 
 sub _generate_report {
