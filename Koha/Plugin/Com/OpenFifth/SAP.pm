@@ -9,6 +9,7 @@ use Koha::File::Transports;
 use Koha::Number::Price;
 
 use File::Spec;
+use Koha::Logger;
 use List::Util qw(min max);
 use Mojo::JSON qw{ decode_json };
 use Text::CSV;
@@ -82,22 +83,35 @@ sub configure {
 sub cronjob_nightly {
     my ($self) = @_;
 
+    my $logger = Koha::Logger->get( { category => 'Koha.Plugin.Com.OpenFifth.SAP' } );
+
+    $logger->info("SAP nightly cronjob started");
+
     my $transport_days = $self->retrieve_data('transport_days');
-    return unless $transport_days;
+    unless ($transport_days) {
+        $logger->warn("SAP nightly cronjob: no transport days configured, skipping");
+        return;
+    }
 
     my @selected_days = sort { $a <=> $b } split( /,/, $transport_days );
     my %selected_days = map  { $_ => 1 } @selected_days;
 
     # Get current day of the week (0=Sunday, ..., 6=Saturday)
     my $today = dt_from_string()->day_of_week % 7;
-    return unless $selected_days{$today};
+    unless ( $selected_days{$today} ) {
+        $logger->info("SAP nightly cronjob: today (day $today) is not a scheduled transport day, skipping");
+        return;
+    }
 
     my $output = $self->retrieve_data('output');
     my $transport;
     if ( $output eq 'upload' ) {
         $transport = Koha::File::Transports->find(
             $self->retrieve_data('transport_server') );
-        return unless $transport;
+        unless ($transport) {
+            $logger->error("SAP nightly cronjob: configured transport server not found, aborting");
+            return;
+        }
     }
 
     # Find start date (previous selected day) and end date (today)
@@ -116,8 +130,17 @@ sub cronjob_nightly {
                  ->add( days => 1 );
     my $end_date = $now;
 
+    $logger->info( sprintf(
+        "SAP nightly cronjob: generating report for %s to %s",
+        $start_date->ymd, $end_date->ymd
+    ) );
+
     my $report = $self->_generate_report( $start_date, $end_date, 1 );
-    return if !$report;
+    unless ($report) {
+        $logger->info("SAP nightly cronjob: no invoices found for date range, skipping upload");
+        return;
+    }
+
     my $filename = $self->_generate_filename();
     my $filepath = "IN/LB01/WK/" . $filename;
 
@@ -126,11 +149,12 @@ sub cronjob_nightly {
         open my $fh, '<', \$report;
         if ( $transport->upload_file( $fh, $filepath ) ) {
             close $fh;
+            $logger->info("SAP nightly cronjob: uploaded $filename to $filepath");
             return 1;
         }
         else {
-            # Deal with transport errors?
             close $fh;
+            $logger->error("SAP nightly cronjob: upload failed for $filepath");
             return 0;
         }
     }
@@ -140,6 +164,7 @@ sub cronjob_nightly {
         open( my $fh, '>', $file_path ) or die "Unable to open $file_path: $!";
         print $fh $report;
         close($fh);
+        $logger->info("SAP nightly cronjob: wrote report to $file_path");
         return 1;
     }
 }
