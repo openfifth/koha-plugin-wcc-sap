@@ -1,7 +1,7 @@
 {
   "name": "koha-plugin-wcc-sap",
-  "version": "0.3.1",
-  "previous_version": "0.3.0",
+  "version": "1.0.0",
+  "previous_version": "0.3.1",
   "description": "A Koha plugin to manage finance integration with SAP for WCC",
   "plugin": {
     "module": "Koha::Plugin::Com::OpenFifth::SAP",
