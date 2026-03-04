@@ -41,6 +41,34 @@ sub new {
     return $self;
 }
 
+sub install {
+    my ($self) = @_;
+    my $dbh = C4::Context->dbh;
+    $dbh->do(q{
+        CREATE TABLE IF NOT EXISTS `plugin_sap_submitted_invoices` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `invoicenumber` varchar(255) NOT NULL,
+          `submitted_at` datetime NOT NULL,
+          `submitted_by` varchar(255) NOT NULL DEFAULT 'cron',
+          `filename` varchar(255) DEFAULT NULL,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `unique_invoicenumber` (`invoicenumber`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    });
+    return 1;
+}
+
+sub uninstall {
+    my ($self) = @_;
+    C4::Context->dbh->do(q{ DROP TABLE IF EXISTS `plugin_sap_submitted_invoices` });
+    return 1;
+}
+
+sub upgrade {
+    my ($self) = @_;
+    return $self->install();
+}
+
 sub configure {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
@@ -159,7 +187,7 @@ sub cronjob_nightly {
         $start_date->ymd, $end_date->ymd
     ) );
 
-    my $report = $self->_generate_report( $start_date, $end_date, 1 );
+    my $report = $self->_generate_report( $start_date, $end_date, 1, 1 );
     unless ($report) {
         $logger->info("SAP nightly cronjob: no invoices found for date range, skipping upload");
         return;
@@ -174,6 +202,7 @@ sub cronjob_nightly {
         open my $fh, '<', \$report;
         if ( $transport->upload_file( $fh, $filepath ) ) {
             close $fh;
+            $self->_mark_invoices_submitted( $self->{_processed_invoices}, $filename, 'cron' );
             $logger->info("SAP nightly cronjob: uploaded $filename to $filepath");
             return 1;
         }
@@ -189,6 +218,7 @@ sub cronjob_nightly {
         open( my $fh, '>', $file_path ) or die "Unable to open $file_path: $!";
         print $fh $report;
         close($fh);
+        $self->_mark_invoices_submitted( $self->{_processed_invoices}, $filename, 'cron' );
         $logger->info("SAP nightly cronjob: wrote report to $file_path");
         return 1;
     }
@@ -249,12 +279,17 @@ sub report_step2 {
     my $results = $self->_generate_report( $startdate, $enddate );
 
     my $templatefile;
+    my $already_submitted_count = 0;
     if ( $output eq "txt" ) {
         my $filename = $self->_generate_filename;
         print $cgi->header( -attachment => "$filename" );
         $templatefile = 'report-step2-txt.tt';
     }
     else {
+        my $submitted = $self->_get_submitted_invoice_numbers();
+        for my $inv ( @{ $self->{_processed_invoices} || [] } ) {
+            $already_submitted_count++ if $submitted->{$inv};
+        }
         print $cgi->header();
         $templatefile = 'report-step2-html.tt';
     }
@@ -262,13 +297,14 @@ sub report_step2 {
     my $template = $self->get_template( { file => $templatefile } );
 
     $template->param(
-        date_ran  => dt_from_string(),
-        startdate => dt_from_string($startdate),
-        enddate   => dt_from_string($enddate),
-        results   => $results,
-        filename  => $self->_generate_filename(),
-        output_config => $self->retrieve_data('output'),
-        CLASS     => ref($self),
+        date_ran                => dt_from_string(),
+        startdate               => dt_from_string($startdate),
+        enddate                 => dt_from_string($enddate),
+        results                 => $results,
+        filename                => $self->_generate_filename(),
+        output_config           => $self->retrieve_data('output'),
+        already_submitted_count => $already_submitted_count,
+        CLASS                   => ref($self),
     );
 
     print $template->output();
@@ -374,7 +410,9 @@ sub api_routes {
 }
 
 sub _generate_report {
-    my ( $self, $startdate, $enddate, $cron ) = @_;
+    my ( $self, $startdate, $enddate, $cron, $exclude_submitted ) = @_;
+
+    $self->{_processed_invoices} = [];
 
     my $where = { 'booksellerid.name' => { 'LIKE' => 'WCC%' } };
 
@@ -390,6 +428,13 @@ sub _generate_report {
     }
     elsif ($enddate_iso) {
         $where->{'me.closedate'} = { '<=', $enddate_iso };
+    }
+
+    if ($exclude_submitted) {
+        my $submitted = $self->_get_submitted_invoice_numbers();
+        if (%$submitted) {
+            $where->{'me.invoicenumber'} = { '-not_in' => [ keys %$submitted ] };
+        }
     }
 
     my $invoices = Koha::Acquisition::Invoices->search( $where,
@@ -414,6 +459,7 @@ sub _generate_report {
     my @all_rows = ();  # Store all rows to add CT row at the beginning
     while ( my $invoice = $invoices->next ) {
         $invoice_count++;
+        push @{ $self->{_processed_invoices} }, $invoice->invoicenumber;
         my $lines  = "";
         my $orders = $invoice->_result->aqorders;
         my @invoice_gl_rows = ();  # Temporary array for GL rows of this invoice
@@ -668,6 +714,62 @@ sub _map_fund_to_suppliernumber {
     my $fund_mappings_data = $self->retrieve_data('fund_field_mappings') || '{}';
     my $fund_mappings = eval { decode_json($fund_mappings_data) } || {};
     return $fund_mappings->{$fund}{suppliernumber} // "UNMAPPED:$fund";
+}
+
+sub _get_submitted_invoice_numbers {
+    my ($self) = @_;
+    my $dbh  = C4::Context->dbh;
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT invoicenumber FROM plugin_sap_submitted_invoices',
+        { Slice => {} }
+    );
+    return { map { $_->{invoicenumber} => 1 } @$rows };
+}
+
+sub _mark_invoices_submitted {
+    my ( $self, $invoice_numbers, $filename, $by ) = @_;
+    return unless $invoice_numbers && @$invoice_numbers;
+    my $dbh = C4::Context->dbh;
+    my $sth = $dbh->prepare(
+        'INSERT IGNORE INTO plugin_sap_submitted_invoices
+         (invoicenumber, submitted_at, submitted_by, filename)
+         VALUES (?, NOW(), ?, ?)'
+    );
+    for my $inv (@$invoice_numbers) {
+        $sth->execute( $inv, $by // 'cron', $filename );
+    }
+}
+
+sub manage_submissions {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    if ( ( $cgi->param('action') // '' ) eq 'clear' ) {
+        my @to_clear = $cgi->multi_param('invoicenumber');
+        if (@to_clear) {
+            my $dbh          = C4::Context->dbh;
+            my $placeholders = join( ',', ('?') x @to_clear );
+            $dbh->do(
+                "DELETE FROM plugin_sap_submitted_invoices WHERE invoicenumber IN ($placeholders)",
+                undef, @to_clear
+            );
+        }
+    }
+
+    my $dbh  = C4::Context->dbh;
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT invoicenumber, submitted_at, submitted_by, filename
+         FROM plugin_sap_submitted_invoices
+         ORDER BY submitted_at DESC',
+        { Slice => {} }
+    );
+
+    my $template = $self->get_template( { file => 'manage-submissions.tt' } );
+    $template->param(
+        submitted_invoices => $rows,
+        CLASS              => ref($self),
+    );
+    $self->output_html( $template->output() );
 }
 
 1;

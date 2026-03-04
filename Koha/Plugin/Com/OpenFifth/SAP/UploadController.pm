@@ -67,7 +67,7 @@ sub upload {
         $upload_dir =~ s{^/+}{};
         $upload_dir =~ s{/+$}{};
         my $filepath = $upload_dir ? "$upload_dir/$filename" : $filename;
-        my $report   = $plugin->_generate_report( $startdate, $enddate );
+        my $report   = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
             return $c->render(
@@ -100,6 +100,7 @@ sub upload {
             close $fh;
 
             if ($upload_result) {
+                $plugin->_mark_invoices_submitted( $plugin->{_processed_invoices}, $filename, 'manual' );
                 return $c->render(
                     status  => 200,
                     openapi => {
@@ -136,7 +137,7 @@ sub upload {
     else {
         # Save to local file
         my $filename = $plugin->_generate_filename();
-        my $report   = $plugin->_generate_report( $startdate, $enddate );
+        my $report   = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
             return $c->render(
@@ -157,6 +158,7 @@ sub upload {
             print $fh $report;
             close($fh);
 
+            $plugin->_mark_invoices_submitted( $plugin->{_processed_invoices}, $filename, 'manual' );
             return $c->render(
                 status  => 200,
                 openapi => {

@@ -85,7 +85,7 @@ subtest 'Plugin metadata' => sub {
 
 # Test required plugin methods exist
 subtest 'Required plugin methods' => sub {
-    plan tests => 6;
+    plan tests => 10;
 
     can_ok($plugin, 'configure');
     can_ok($plugin, 'cronjob_nightly');
@@ -93,6 +93,10 @@ subtest 'Required plugin methods' => sub {
     can_ok($plugin, '_generate_report');
     can_ok($plugin, '_generate_filename');
     can_ok($plugin, 'new');
+    can_ok($plugin, 'manage_submissions');
+    can_ok($plugin, 'install');
+    can_ok($plugin, '_mark_invoices_submitted');
+    can_ok($plugin, '_get_submitted_invoice_numbers');
 };
 
 # Test configuration parameter handling

@@ -68,7 +68,14 @@
             </main>
         </div>
         <div class="col-md-2 order-sm-2 order-md-1">
-            <aside></aside>
+            <aside>
+                <div class="sidebar-module">
+                    <h5>Administration</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=manage_submissions">Manage submitted invoices</a></li>
+                    </ul>
+                </div>
+            </aside>
         </div>
     </div>
 
