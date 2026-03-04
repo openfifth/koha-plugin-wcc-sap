@@ -62,8 +62,9 @@ sub upload {
         }
 
         # Generate report
-        my $filename = $plugin->_generate_filename();
-        my $filepath = "IN/LB01/WK/" . $filename;
+        my $filename    = $plugin->_generate_filename();
+        my $upload_path = $plugin->retrieve_data('upload_path') || $transport->upload_directory;
+        my $filepath    = $upload_path . $filename;
         my $report   = $plugin->_generate_report( $startdate, $enddate );
 
         unless ($report) {

@@ -79,6 +79,12 @@
                                 [% END %]
                                 </select>
                             </li>
+                            <li>
+                                <label for="upload_path">Upload path (directory on remote server):</label>
+                                <input type="text" name="upload_path" id="upload_path"
+                                       value="[% upload_path | html %]"
+                                       placeholder="Leave blank to use transport's upload directory" size="40" />
+                            </li>
                         </ol>
                         [% ELSE %]
                         <div class="alert alert-info">

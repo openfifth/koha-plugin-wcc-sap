@@ -64,6 +64,7 @@ sub configure {
             transport_server     => $self->retrieve_data('transport_server'),
             transport_days       => $transport_days,
             output               => $self->retrieve_data('output'),
+            upload_path          => $self->retrieve_data('upload_path'),
             available_transports => $available_transports,
             funds                => $funds,
             fund_mappings        => $fund_mappings,
@@ -95,6 +96,7 @@ sub configure {
                 transport_server    => scalar $cgi->param('transport_server'),
                 transport_days      => $days_str,
                 output              => scalar $cgi->param('output'),
+                upload_path         => scalar $cgi->param('upload_path'),
                 fund_field_mappings => encode_json( \%fund_mappings ),
             }
         );
@@ -164,9 +166,10 @@ sub cronjob_nightly {
     }
 
     my $filename = $self->_generate_filename();
-    my $filepath = "IN/LB01/WK/" . $filename;
 
     if ( $output eq 'upload' ) {
+        my $upload_path = $self->retrieve_data('upload_path') || $transport->upload_directory;
+        my $filepath    = $upload_path . $filename;
         $transport->connect;
         open my $fh, '<', \$report;
         if ( $transport->upload_file( $fh, $filepath ) ) {
