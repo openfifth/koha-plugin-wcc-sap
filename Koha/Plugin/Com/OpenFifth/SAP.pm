@@ -549,11 +549,11 @@ sub _generate_report {
         while ( my $line = $orders->next ) {
             # Keep full precision - don't round yet (Round Last principle)
             # Values in pence but still full precision
-            my $unitprice_tax_excluded = $line->unitprice_tax_excluded * 100;
+            my $unitprice_tax_excluded = ($line->unitprice_tax_excluded // 0) * 100;
             my $quantity = $line->quantity || 1;
-            my $tax_value_on_receiving = $line->tax_value_on_receiving * 100;
+            my $tax_value_on_receiving = ($line->tax_value_on_receiving // 0) * 100;
             $tax_amount = $tax_amount + $tax_value_on_receiving;
-            my $tax_rate_on_receiving = $line->tax_rate_on_receiving * 100;
+            my $tax_rate_on_receiving = ($line->tax_rate_on_receiving // 0) * 100;
             my $tax_code =
                 $tax_rate_on_receiving == 20 ? 'P1'
               : $tax_rate_on_receiving == 5  ? 'P2'
