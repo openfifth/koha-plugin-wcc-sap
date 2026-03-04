@@ -228,11 +228,14 @@ sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
-    unless ( $cgi->param('output') ) {
-        $self->report_step1();
+    if ( ( $cgi->param('page') // '' ) eq 'manage_submissions' ) {
+        $self->manage_submissions();
+    }
+    elsif ( $cgi->param('output') ) {
+        $self->report_step2();
     }
     else {
-        $self->report_step2();
+        $self->report_step1();
     }
 }
 

@@ -61,7 +61,7 @@
                     <div class="alert alert-warning">
                         <strong>[% already_submitted_count %] invoice(s) in this date range have already been submitted</strong>
                         and will be excluded from any upload.
-                        <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=manage_submissions">Manage submitted invoices</a>
+                        <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=report&amp;page=manage_submissions">Manage submitted invoices</a>
                     </div>
                     [% END %]
                     [%- IF results -%]

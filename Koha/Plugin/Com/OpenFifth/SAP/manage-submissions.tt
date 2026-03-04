@@ -23,7 +23,7 @@
             <a href="/cgi-bin/koha/reports/reports-home.pl">Reports</a>
         [% END %]
         [% WRAPPER breadcrumb_item %]
-            <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=report">WCC SAP</a>
+            <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=report">WCC SAP Report</a>
         [% END %]
         [% WRAPPER breadcrumb_item bc_active= 1 %]
             <span>Submitted Invoices</span>
@@ -41,7 +41,8 @@
                     <p>The following invoices have been successfully submitted to SAP. Select invoices and click <strong>Allow resubmission</strong> to remove them from the submitted list.</p>
                     <form method="get" action="/cgi-bin/koha/plugins/run.pl">
                         <input type="hidden" name="class" value="[% CLASS | html %]"/>
-                        <input type="hidden" name="method" value="manage_submissions"/>
+                        <input type="hidden" name="method" value="report"/>
+                        <input type="hidden" name="page" value="manage_submissions"/>
                         <input type="hidden" name="action" value="clear"/>
                         <table class="table table-bordered table-sm">
                             <thead>
