@@ -11,7 +11,8 @@ use Koha::Number::Price;
 use File::Spec;
 use Koha::Logger;
 use List::Util qw(min max);
-use Mojo::JSON qw{ decode_json };
+use Koha::Acquisition::Funds;
+use Mojo::JSON qw{ decode_json encode_json };
 use Text::CSV;
 
 our $VERSION = '0.1.0';
@@ -56,11 +57,16 @@ sub configure {
             grep { defined $days_of_week[$_] }
               split( ',', $self->retrieve_data('transport_days') )
         };
+        my $funds = Koha::Acquisition::Funds->search( {}, { order_by => 'budget_code' } );
+        my $fund_mappings_data = $self->retrieve_data('fund_field_mappings') || '{}';
+        my $fund_mappings = eval { decode_json($fund_mappings_data) } || {};
         $template->param(
             transport_server     => $self->retrieve_data('transport_server'),
             transport_days       => $transport_days,
             output               => $self->retrieve_data('output'),
-            available_transports => $available_transports
+            available_transports => $available_transports,
+            funds                => $funds,
+            fund_mappings        => $fund_mappings,
         );
 
         $self->output_html( $template->output() );
@@ -69,11 +75,27 @@ sub configure {
         # Get selected days (returns an array from multiple checkboxes)
         my @selected_days = $cgi->multi_param('days');
         my $days_str      = join( ',', sort { $a <=> $b } @selected_days );
+
+        # Parse fund mapping fields: fund_costcenter_FUNDCODE and fund_suppliernumber_FUNDCODE
+        my %fund_mappings;
+        for my $param_name ( $cgi->param() ) {
+            if ( $param_name =~ /^fund_(costcenter|suppliernumber)_(.+)$/ ) {
+                my $field_type = $1;
+                my $fund_code  = $2;
+                my $value      = $cgi->param($param_name);
+                if ( $value && $value =~ /\S/ ) {
+                    $fund_mappings{$fund_code} ||= {};
+                    $fund_mappings{$fund_code}{$field_type} = $value;
+                }
+            }
+        }
+
         $self->store_data(
             {
-                transport_server => scalar $cgi->param('transport_server'),
-                transport_days   => $days_str,
-                output           => scalar $cgi->param('output')
+                transport_server    => scalar $cgi->param('transport_server'),
+                transport_days      => $days_str,
+                output              => scalar $cgi->param('output'),
+                fund_field_mappings => encode_json( \%fund_mappings ),
             }
         );
         $self->go_home();
@@ -633,80 +655,16 @@ sub _generate_filename {
 
 sub _map_fund_to_costcenter {
     my ( $self, $fund ) = @_;
-    my $map = {
-        WAFI   => "W26315",
-        WANF   => "W26315",
-        WARC   => "W26311",
-        WBAS   => "W26315",
-        WCFI   => "W26315",
-        WCHG   => "W26315",
-        WCHI   => "W26315",
-        WCNF   => "W26315",
-        WCOM   => "W26315",
-        WEBE   => "W26315",
-        WELE   => "W26315",
-        WERE   => "W26353",
-        WFSO   => "W26315",
-        WHLS   => "W26352",
-        WLPR   => "W26315",
-        WNHC   => "W26315",
-        WNSO   => "W26315",
-        WPER   => "W26315",
-        WRCHI  => "W26315",
-        WREF   => "W26353",
-        WREFSO => "W26315",
-        WREP   => "W26315",
-        WREQ   => "W26315",
-        WRFI   => "W26315",
-        WRNF   => "W26315",
-        WSHC   => "W26353",
-        WSPO   => "W26315",
-        WSSS   => "W26315",
-        WVAT   => "W26315",
-        WWML   => "W26352",
-        WYAD   => "W26315"
-    };
-    my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
-    return $return;
+    my $fund_mappings_data = $self->retrieve_data('fund_field_mappings') || '{}';
+    my $fund_mappings = eval { decode_json($fund_mappings_data) } || {};
+    return $fund_mappings->{$fund}{costcenter} // "UNMAPPED:$fund";
 }
 
 sub _map_fund_to_suppliernumber {
     my ( $self, $fund ) = @_;
-    my $map = {
-        WAFI   => 4539,
-        WANF   => 4539,
-        WARC   => 4539,
-        WBAS   => 4539,
-        WCFI   => 4539,
-        WCHG   => 4539,
-        WCHI   => 4539,
-        WCNF   => 4539,
-        WCOM   => 4539,
-        WEBE   => 4539,
-        WELE   => 4539,
-        WERE   => 5190,
-        WFSO   => 4539,
-        WHLS   => 4539,
-        WLPR   => 4539,
-        WNHC   => 4539,
-        WNSO   => 4539,
-        WPER   => 4625,
-        WRCHI  => 4539,
-        WREF   => 4539,
-        WREFSO => 4539,
-        WREP   => 4539,
-        WREQ   => 4539,
-        WRFI   => 4539,
-        WRNF   => 4539,
-        WSHC   => 4539,
-        WSPO   => 4539,
-        WSSS   => 4539,
-        WVAT   => 4539,
-        WWML   => 4539,
-        WYAD   => 4539
-    };
-    my $return = defined( $map->{$fund} ) ? $map->{$fund} : "UNMAPPED:$fund";
-    return $return;
+    my $fund_mappings_data = $self->retrieve_data('fund_field_mappings') || '{}';
+    my $fund_mappings = eval { decode_json($fund_mappings_data) } || {};
+    return $fund_mappings->{$fund}{suppliernumber} // "UNMAPPED:$fund";
 }
 
 1;

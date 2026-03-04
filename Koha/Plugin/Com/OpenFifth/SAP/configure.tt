@@ -86,6 +86,45 @@
                         </div>
                         [% END %]
                     </fieldset>
+                    <fieldset class="rows">
+                        <legend>Fund mappings</legend>
+                        [% IF funds.count %]
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fund code</th>
+                                    <th>Fund name</th>
+                                    <th>Cost center</th>
+                                    <th>Supplier number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                [% FOREACH fund IN funds %]
+                                <tr>
+                                    <td>[% fund.budget_code | html %]</td>
+                                    <td>[% fund.budget_name | html %]</td>
+                                    <td>
+                                        <input type="text"
+                                               name="fund_costcenter_[% fund.budget_code | html %]"
+                                               value="[% fund_mappings.${fund.budget_code}.costcenter | html %]"
+                                               maxlength="10" size="10" />
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                               name="fund_suppliernumber_[% fund.budget_code | html %]"
+                                               value="[% fund_mappings.${fund.budget_code}.suppliernumber | html %]"
+                                               maxlength="10" size="10" />
+                                    </td>
+                                </tr>
+                                [% END %]
+                            </tbody>
+                        </table>
+                        [% ELSE %]
+                        <div class="alert alert-info">
+                            No acquisition funds found. Please <a href="/cgi-bin/koha/acqui/budgets.pl">create funds</a> first.
+                        </div>
+                        [% END %]
+                    </fieldset>
                     <fieldset class="action">
                         <input type="hidden" name="save" value="1" />
                         <input type="submit" class="btn btn-primary" value="Save configuration" />
