@@ -83,12 +83,19 @@
         </div>
     </div>
 
-[% INCLUDE 'intranet-bottom.inc' %]
+[% MACRO jsinclude BLOCK %]
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectAll = document.getElementById('select-all');
+            if (!selectAll) return;
+            selectAll.addEventListener('change', function () {
+                var checked = selectAll.checked;
+                document.querySelectorAll('input[name="invoicenumber"]').forEach(function (cb) {
+                    cb.checked = checked;
+                });
+            });
+        });
+    </script>
+[% END %]
 
-<script>
-$(document).ready(function() {
-    $('#select-all').change(function() {
-        $('input[name="invoicenumber"]').prop('checked', $(this).is(':checked'));
-    });
-});
-</script>
+[% INCLUDE 'intranet-bottom.inc' %]
