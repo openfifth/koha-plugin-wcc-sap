@@ -71,8 +71,8 @@
                         <legend>Output &amp; Transport</legend>
                         <ol>
                             <li>
-                                <label for="output">Output to:</label>
-                                <select name="output" id="output">
+                                <label for="report_output">Output to:</label>
+                                <select name="output" id="report_output">
                                     <option value=""></option>
                                     <option value="file" [% IF output == 'file' %]selected[% END %]>Local file</option>
                                     <option value="upload" [% IF output == 'upload' %]selected[% END %]>Upload</option>
@@ -191,7 +191,7 @@
 [% MACRO jsinclude BLOCK %]
     <script>
         (function () {
-            var output = document.getElementById('output');
+            var output = document.getElementById('report_output');
             var fieldset = document.getElementById('transport_fieldset');
             if (!output || !fieldset) return;
             function syncTransport() {

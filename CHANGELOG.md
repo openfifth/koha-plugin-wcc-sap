@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configuration page: lift Run days back out of the Transport sub-fieldset into its own top-level fieldset, keeping the horizontal day-checkbox layout
 
+### Fixed
+
+- Configuration page: rename the Output select's id from `output` to `report_output` to avoid a CSS clash with an upstream Koha rule on `#output`
+
 ## [1.0.3] - 2026-05-06
 
 ### Changed
