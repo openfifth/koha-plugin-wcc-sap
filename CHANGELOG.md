@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-05-06
+
 ### Added
 
 - Tools-menu access to the submitted-invoices manager: the plugin now defines a `tool` method, so it appears under "Tools › Tool plugins" and the Manage Submitted Invoices page is reachable directly from the Tools menu (matching the pattern already used by the WSCC Oracle plugin)
@@ -360,7 +362,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.2...v1.0.3
