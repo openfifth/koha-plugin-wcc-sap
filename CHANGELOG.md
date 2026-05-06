@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced report template with modern design patterns
 - Update UI with WCC branding and improved visual feedback
 - Improve user experience with better visual feedback
+- Clarify on the configuration page that Transport settings are unused when Output is set to "Local file" (disable the fieldset and explain the pull-vs-push model)
+- Move `manage-submissions.tt` JavaScript into the standard `jsinclude` macro and drop the unnecessary jQuery dependency
 
 ### Fixed
 
