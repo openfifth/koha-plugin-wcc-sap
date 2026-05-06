@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-05-06
+
 ### Changed
 
 - Clarify on the configuration page that Transport settings are unused when Output is set to "Local file" — the Transport fieldset is now disabled and an explanation describes the pull-vs-push model
@@ -322,7 +324,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.3.1...v1.0.0
 [0.3.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.3.0...v0.3.1

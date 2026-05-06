@@ -15,14 +15,14 @@ use Koha::Acquisition::Funds;
 use Mojo::JSON qw{ decode_json encode_json };
 use Text::CSV;
 
-our $VERSION = '1.0.1';
+our $VERSION = '1.0.2';
 
 our $metadata = {
     name => 'SAP Finance Integration',
 
     author          => 'Open Fifth',
     date_authored   => '2024-11-15',
-    date_updated    => '2026-03-04',
+    date_updated    => '2026-05-06',
     minimum_version => '24.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
