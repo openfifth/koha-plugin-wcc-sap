@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tools-menu access to the submitted-invoices manager: the plugin now defines a `tool` method, so it appears under "Tools › Tool plugins" and the Manage Submitted Invoices page is reachable directly from the Tools menu (matching the pattern already used by the WSCC Oracle plugin)
+- Cron-run audit log: a new `plugin_sap_cron_runs` table captures every nightly cron attempt that did real work (status, invoice count, filename, detail message). Recent runs are surfaced as a "Recent cron runs" section at the top of the Tools page so admins can see at a glance whether the cron is healthy and what it has been delivering
 
 ### Changed
 

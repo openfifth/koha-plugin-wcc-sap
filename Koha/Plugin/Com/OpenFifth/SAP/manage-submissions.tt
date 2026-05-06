@@ -32,7 +32,48 @@
     <div class="row">
         <div class="col-md-10 order-md-2 order-sm-1">
             <main>
-                <h1>Submitted Invoices</h1>
+                <h1>WCC SAP &mdash; Tools</h1>
+
+                <div class="page-section">
+                    <h2>Recent cron runs</h2>
+                    [% IF cron_runs.size %]
+                    <p>The 30 most recent nightly cron executions. <strong>success</strong> means a file was generated and delivered; <strong>no_data</strong> means the cron ran but found no invoices for the date range; <strong>error</strong> means delivery failed.</p>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Run at</th>
+                                <th>Status</th>
+                                <th>Invoices</th>
+                                <th>Filename</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            [% FOREACH run IN cron_runs %]
+                            <tr>
+                                <td>[% run.run_at | html %]</td>
+                                <td>
+                                    [% IF run.status == 'success' %]<span class="badge badge-success">[% run.status | html %]</span>
+                                    [% ELSIF run.status == 'no_data' %]<span class="badge badge-secondary">[% run.status | html %]</span>
+                                    [% ELSIF run.status == 'error' %]<span class="badge badge-danger">[% run.status | html %]</span>
+                                    [% ELSE %]<span class="badge badge-info">[% run.status | html %]</span>
+                                    [% END %]
+                                </td>
+                                <td>[% run.invoices_found | html %]</td>
+                                <td>[% run.filename | html %]</td>
+                                <td>[% run.message | html %]</td>
+                            </tr>
+                            [% END %]
+                        </tbody>
+                    </table>
+                    [% ELSE %]
+                    <div class="alert alert-info">
+                        No nightly cron runs have been recorded yet.
+                    </div>
+                    [% END %]
+                </div>
+
+                <h2>Submitted Invoices</h2>
                 <div class="page-section">
                     [% IF submitted_invoices.size %]
                     <p>The following invoices have been successfully submitted to SAP. Select invoices and click <strong>Allow resubmission</strong> to remove them from the submitted list.</p>
