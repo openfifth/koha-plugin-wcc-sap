@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-05-06
+
 ### Fixed
 
 - Replace stray "RBKC SAP" copy-paste leftovers in the configuration breadcrumb and report-step1 page with the correct "WCC SAP" label
@@ -349,7 +351,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.1...v1.0.2
