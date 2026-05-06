@@ -62,7 +62,7 @@ sub install {
           `status` varchar(255) NOT NULL,
           `invoices_found` int(11) NOT NULL DEFAULT 0,
           `filename` varchar(255) DEFAULT NULL,
-          `message` text DEFAULT NULL,
+          `message` text,
           PRIMARY KEY (`id`),
           KEY `idx_run_at` (`run_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
