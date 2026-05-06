@@ -43,11 +43,15 @@
                         <ol>
                             <li>
                                 <label for="output">Output to:</label>
-                                <select name="output">
+                                <select name="output" id="output">
                                     <option value=""></option>
                                     <option value="file" [% IF output == 'file' %]selected[% END %]>Local file</option>
                                     <option value="upload" [% IF output == 'upload' %]selected[% END %]>Upload</option>
                                 </select>
+                                <div class="hint">
+                                    <strong>Local file:</strong> the plugin writes the SAP file to a directory on the Koha server. A server administrator is expected to configure a local (S)FTP service (jailed to that directory) so the third party can <em>pull</em> files at their convenience. The Transport settings below are <strong>not used</strong> in this mode.<br />
+                                    <strong>Upload:</strong> the plugin actively <em>pushes</em> the SAP file to the third party's (S)FTP server using the Transport settings below.
+                                </div>
                             </li>
                         </ol>
                     </fieldset>
@@ -63,8 +67,13 @@
                             <li><input type="checkbox" name="days" value="6" [% IF transport_days.saturday %]checked[% END %]><label> Saturday</label></li>
                         </ol>
                     </fieldset>
-                    <fieldset class="rows">
+                    <fieldset class="rows" id="transport_fieldset"[% IF output == 'file' %] disabled[% END %]>
                         <legend>Transport</legend>
+                        [% IF output == 'file' %]
+                        <div class="alert alert-info">
+                            <strong>Not used in &quot;Local file&quot; mode.</strong> When Output is set to <em>Local file</em>, the plugin writes the SAP file locally and does not push it anywhere. Configure a local (S)FTP server jailed to the output directory so the third party can pull files instead.
+                        </div>
+                        [% END %]
                         [% IF available_transports.count %]
 						<ol>
                             <li>
@@ -143,5 +152,22 @@
             <aside></aside>
         </div>
     </div>
+
+[% MACRO jsinclude BLOCK %]
+    <script>
+        (function () {
+            var output = document.getElementById('output');
+            var fieldset = document.getElementById('transport_fieldset');
+            if (!output || !fieldset) return;
+            function syncTransport() {
+                var isFile = output.value === 'file';
+                fieldset.disabled = isFile;
+                fieldset.style.opacity = isFile ? '0.5' : '';
+            }
+            output.addEventListener('change', syncTransport);
+            syncTransport();
+        })();
+    </script>
+[% END %]
 
 [% INCLUDE 'intranet-bottom.inc' %]
