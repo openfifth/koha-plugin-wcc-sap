@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Replace stray "RBKC SAP" copy-paste leftovers in the configuration breadcrumb and report-step1 page with the correct "WCC SAP" label
+
 ## [1.0.4] - 2026-05-06
 
 ### Changed

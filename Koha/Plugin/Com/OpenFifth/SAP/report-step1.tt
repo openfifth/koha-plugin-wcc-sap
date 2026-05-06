@@ -22,7 +22,7 @@
             <a href="/cgi-bin/koha/reports/reports-home.pl">Reports</a>
         [% END %]
         [% WRAPPER breadcrumb_item bc_active= 1 %]
-            <span>RBKC SAP</span>
+            <span>WCC SAP</span>
         [% END %]
     [% END #/ WRAPPER breadcrumbs %]
 [% END #/ WRAPPER sub-header.inc %]

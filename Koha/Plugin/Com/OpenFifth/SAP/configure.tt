@@ -51,7 +51,7 @@
             <a href="/cgi-bin/koha/plugins/plugins-home.pl?method=report">Plugins</a>
         [% END %]
         [% WRAPPER breadcrumb_item %]
-            <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&method=report">RBKC SAP</a>
+            <a href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&method=report">WCC SAP</a>
         [% END %]
         [% WRAPPER breadcrumb_item bc_active= 1 %]
             <span>Configuration</span>
