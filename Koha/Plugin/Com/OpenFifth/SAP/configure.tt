@@ -111,19 +111,6 @@
                                            value="[% upload_path | html %]"
                                            placeholder="Leave blank to use transport's upload directory" size="40" />
                                 </li>
-                                <li>
-                                    <label class="inline">Run days:</label>
-                                    <span class="run-days-inline">
-                                        <label class="inline"><input type="checkbox" name="days" value="0" [% IF transport_days.sunday %]checked[% END %]> Sun</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="1" [% IF transport_days.monday %]checked[% END %]> Mon</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="2" [% IF transport_days.tuesday %]checked[% END %]> Tue</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="3" [% IF transport_days.wednesday %]checked[% END %]> Wed</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="4" [% IF transport_days.thursday %]checked[% END %]> Thu</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="5" [% IF transport_days.friday %]checked[% END %]> Fri</label>
-                                        <label class="inline"><input type="checkbox" name="days" value="6" [% IF transport_days.saturday %]checked[% END %]> Sat</label>
-                                    </span>
-                                    <div class="hint">Days of the week the nightly cron will push the file.</div>
-                                </li>
                             </ol>
                             [% ELSE %]
                             <div class="alert alert-info">
@@ -131,6 +118,23 @@
                             </div>
                             [% END %]
                         </fieldset>
+                    </fieldset>
+                    <fieldset class="rows">
+                        <legend>Run days</legend>
+                        <ol>
+                            <li>
+                                <span class="run-days-inline">
+                                    <label class="inline"><input type="checkbox" name="days" value="0" [% IF transport_days.sunday %]checked[% END %]> Sun</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="1" [% IF transport_days.monday %]checked[% END %]> Mon</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="2" [% IF transport_days.tuesday %]checked[% END %]> Tue</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="3" [% IF transport_days.wednesday %]checked[% END %]> Wed</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="4" [% IF transport_days.thursday %]checked[% END %]> Thu</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="5" [% IF transport_days.friday %]checked[% END %]> Fri</label>
+                                    <label class="inline"><input type="checkbox" name="days" value="6" [% IF transport_days.saturday %]checked[% END %]> Sat</label>
+                                </span>
+                                <div class="hint">Days of the week the nightly cron will run.</div>
+                            </li>
+                        </ol>
                     </fieldset>
                     <fieldset class="rows">
                         <legend>Fund mappings</legend>

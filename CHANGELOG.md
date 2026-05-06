@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Configuration page: lift Run days back out of the Transport sub-fieldset into its own top-level fieldset, keeping the horizontal day-checkbox layout
+
 ## [1.0.3] - 2026-05-06
 
 ### Changed
