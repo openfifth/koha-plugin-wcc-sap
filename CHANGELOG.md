@@ -7,9 +7,157 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Clarify on the configuration page that Transport settings are unused when Output is set to "Local file" — the Transport fieldset is now disabled and an explanation describes the pull-vs-push model
+- Move `manage-submissions.tt` JavaScript into the standard `jsinclude` macro and drop the unnecessary jQuery dependency
+
+## [1.0.1] - 2026-03-04
+
+### Fixed
+
+- Route `manage_submissions` action through the `report` method so it resolves correctly from the plugin entry point
+
+### Changed
+
+- Use the Koha `sidebar_menu` pattern for the report aside
+
+## [1.0.0] - 2026-03-04
+
 ### Added
 
-- Text::CSV integration for proper CSV formatting and validation
+- Invoice submission deduplication: track submitted invoices in a new `plugin_sap_submitted_invoices` table to prevent re-submission, with a UI for unlocking previously submitted invoices and a preview warning when invoices in a date range have already been submitted
+
+## [0.3.1] - 2026-03-04
+
+### Fixed
+
+- Normalize `upload_path` to prevent bare concatenation with the filename
+
+## [0.3.0] - 2026-03-04
+
+### Added
+
+- Configurable upload path that falls back to the transport's upload directory when blank
+
+## [0.2.1] - 2026-03-04
+
+### Fixed
+
+- Guard against undefined tax/price fields in GL line generation
+
+## [0.2.0] - 2026-03-04
+
+### Added
+
+- UI-driven fund mappings configuration on the configuration page, replacing the previous hardcoded fund-to-cost-center/supplier mappings
+
+## [0.1.0] - 2026-03-03
+
+### Added
+
+- Logging for the nightly cronjob via `Koha::Logger`
+
+## [0.0.36] - 2026-03-02
+
+### Fixed
+
+- Remove references to non-existent datepicker assets from templates
+
+## [0.0.35] - 2026-03-02
+
+### Changed
+
+- Replace the CGI-based `sftp_upload` action with a REST API endpoint
+
+## [0.0.34] - 2026-03-02
+
+### Fixed
+
+- Port cronjob date-boundary fix and `EDI_EXCL` parsing from the rbkc/wscc plugins
+
+## [0.0.33] - 2026-03-02
+
+Release housekeeping only — no functional changes.
+
+## [0.0.32] - 2026-03-02
+
+### Fixed
+
+- Add CSRF token to the SFTP upload AJAX request
+
+## [0.0.31] - 2025-11-25
+
+### Fixed
+
+- Include adjustment tax in total tax calculation
+
+## [0.0.30] - 2025-11-13
+
+### Changed
+
+- Pin the GitHub Actions workflow to a single branch and image version
+
+## [0.0.29] - 2025-11-13
+
+### Fixed
+
+- Ensure the AP total equals the sum of rounded GL lines plus tax
+- Skip £0 adjustments in the SAP export to prevent GL line errors
+
+## [0.0.28] - 2025-10-09
+
+### Fixed
+
+- Correct line ordering in CSV output
+
+## [0.0.27] - 2025-10-08
+
+### Fixed
+
+- Correct `Koha::Number::Price` usage to output integer pence
+
+## [0.0.26] - 2025-10-08
+
+### Fixed
+
+- Implement HMRC-compliant rounding and the "Round Last" principle
+
+## [0.0.25] - 2025-10-06
+
+### Fixed
+
+- Round adjustment amounts to integer pence
+
+## [0.0.24] - 2025-10-03
+
+### Fixed
+
+- Calculate tax-included adjustment amounts for the AP total
+
+## [0.0.23] - 2025-10-03
+
+### Fixed
+
+- Parse service charge tax rates from adjustment notes
+
+## [0.0.22] - 2025-10-01
+
+### Fixed
+
+- Additional corrections for ticket 131752 tax changes (follow-up to 0.0.21)
+
+## [0.0.21] - 2025-09-30
+
+### Fixed
+
+- AP header lines now use tax-inclusive totals while GL ledger lines use tax-exclusive amounts (ticket 131752)
+
+## [0.0.20] - 2025-08-19
+
+### Added
+
+- `Text::CSV` integration for proper CSV formatting and validation
 - Robust CSV generation with correct escaping of special characters
 - Enhanced download functionality with standards-compliant CSV output
 - New `sftp_upload` method with configuration-aware upload/save logic
@@ -21,21 +169,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replace manual string concatenation with Text::CSV writer
+- Replace manual string concatenation with the `Text::CSV` writer
 - Convert CSV rows to array references for better maintainability
-- Improve code structure and standards compliance
+- Improve overall code structure and standards compliance
 - Enhanced report template with modern design patterns
 - Update UI with WCC branding and improved visual feedback
-- Improve user experience with better visual feedback
-- Clarify on the configuration page that Transport settings are unused when Output is set to "Local file" (disable the fieldset and explain the pull-vs-push model)
-- Move `manage-submissions.tt` JavaScript into the standard `jsinclude` macro and drop the unnecessary jQuery dependency
 
 ### Fixed
 
-- Improve adjustment matching logic for split orders to work with enhanced Koha core adjustment creation
 - Proper handling of quotes, commas, and special characters in CSV output
 - Enhanced error handling with user-friendly messages
 - Better template parameter passing for UI functionality
+
+## [0.0.19] - 2025-08-07
+
+### Fixed
+
+- Improve adjustment matching logic for split orders so it works with the enhanced Koha core adjustment creation
+
+### Changed
+
+- Sync CHANGELOG with actual release history
 
 ## [0.0.18] - 2025-07-22
 
@@ -168,7 +322,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.18...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.3.1...v1.0.0
+[0.3.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.36...v0.1.0
+[0.0.36]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.35...v0.0.36
+[0.0.35]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.34...v0.0.35
+[0.0.34]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.33...v0.0.34
+[0.0.33]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.32...v0.0.33
+[0.0.32]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.31...v0.0.32
+[0.0.31]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.30...v0.0.31
+[0.0.30]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.29...v0.0.30
+[0.0.29]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.28...v0.0.29
+[0.0.28]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.27...v0.0.28
+[0.0.27]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.26...v0.0.27
+[0.0.26]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.25...v0.0.26
+[0.0.25]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.24...v0.0.25
+[0.0.24]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.23...v0.0.24
+[0.0.23]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.22...v0.0.23
+[0.0.22]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.21...v0.0.22
+[0.0.21]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.20...v0.0.21
+[0.0.20]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.19...v0.0.20
+[0.0.19]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.18...v0.0.19
 [0.0.18]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.17...v0.0.18
 [0.0.17]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.0.15...v0.0.16
