@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-05-06
+
 ### Changed
 
 - Configuration page: merge Output and Transport into a single fieldset with Transport as a nested sub-fieldset (Run days now lives under Transport since it only governs upload scheduling); render Run days checkboxes horizontally instead of vertically
@@ -333,7 +335,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v0.3.1...v1.0.0

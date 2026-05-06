@@ -15,7 +15,7 @@ use Koha::Acquisition::Funds;
 use Mojo::JSON qw{ decode_json encode_json };
 use Text::CSV;
 
-our $VERSION = '1.0.2';
+our $VERSION = '1.0.3';
 
 our $metadata = {
     name => 'SAP Finance Integration',
