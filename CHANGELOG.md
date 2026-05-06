@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Tools-menu access to the submitted-invoices manager: the plugin now defines a `tool` method, so it appears under "Tools › Tool plugins" and the Manage Submitted Invoices page is reachable directly from the Tools menu (matching the pattern already used by the WSCC Oracle plugin)
+
+### Changed
+
+- "Manage submitted invoices" links on the report page and warning banner now route to `method=tool`, and the page itself uses a Tools breadcrumb. The legacy `method=report&page=manage_submissions` route is retained for backward compatibility
+
 ## [1.0.5] - 2026-05-06
 
 ### Fixed

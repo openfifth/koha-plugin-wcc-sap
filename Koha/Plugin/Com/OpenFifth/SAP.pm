@@ -69,6 +69,12 @@ sub upgrade {
     return $self->install();
 }
 
+sub tool {
+    my ( $self, $args ) = @_;
+    $self->install();
+    $self->manage_submissions();
+}
+
 sub configure {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
