@@ -64,7 +64,7 @@
         <div class="col-md-10 order-md-2 order-sm-1">
             <main>
                 <h1>SAP Report - Configuration</h1>
-                <form method="get">
+                <form method="post">
                     <input type="hidden" name="class" value="[% CLASS %]"/>
                     <input type="hidden" name="method" value="[% METHOD %]"/>
                     <fieldset class="rows">
