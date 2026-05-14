@@ -69,15 +69,6 @@ sub upload {
         $upload_dir =~ s{/+$}{};    # trim trailing slashes (cosmetic);
                                     # leading slash is preserved so the
                                     # operator decides absolute vs relative
-
-        Koha::Logger->get( { category => 'Koha.Plugin.Com.OpenFifth.SAP' } )
-            ->warn( sprintf(
-                "SAP upload: plugin upload_path=[%s] transport upload_directory=[%s] effective upload_dir=[%s]",
-                $plugin->retrieve_data('upload_path') // '<undef>',
-                $transport->upload_directory         // '<undef>',
-                $upload_dir,
-            ) );
-
         my $report = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
@@ -106,12 +97,28 @@ sub upload {
                 );
             }
 
+            # Set the remote working directory explicitly via the
+            # public change_directory() API. This is portable across the
+            # 24.11 transport API (no options-hash on upload_file) and
+            # the newer API on main.
+            if ( $upload_dir ne ''
+                && !$transport->change_directory($upload_dir) )
+            {
+                my $error_detail =
+                  $c->_extract_transport_error( $transport, 'change_directory' );
+                return $c->render(
+                    status  => 424,
+                    openapi => {
+                        success      => Mojo::JSON->false,
+                        message      => "Failed to change to upload directory '$upload_dir': "
+                                      . $error_detail->{message},
+                        error_detail => $error_detail,
+                    }
+                );
+            }
+
             open my $fh, '<', \$report;
-            my $upload_result = $transport->upload_file(
-                $fh,
-                $filename,
-                $upload_dir ne '' ? { path => $upload_dir } : (),
-            );
+            my $upload_result = $transport->upload_file( $fh, $filename );
             close $fh;
 
             if ($upload_result) {

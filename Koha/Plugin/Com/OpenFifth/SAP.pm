@@ -222,30 +222,45 @@ sub cronjob_nightly {
     my $invoices_found = scalar @{ $self->{_processed_invoices} || [] };
 
     if ( $output eq 'upload' ) {
-        my $upload_path = $self->retrieve_data('upload_path') || $transport->upload_directory;
-        my $filepath    = $upload_path . $filename;
+        my $upload_dir = $self->retrieve_data('upload_path')
+                      // $transport->upload_directory
+                      // '';
+        $upload_dir =~ s{/+$}{};
+        my $remote_display = $upload_dir ne '' ? "$upload_dir/$filename" : $filename;
+
         $transport->connect;
+        if ( $upload_dir ne '' && !$transport->change_directory($upload_dir) ) {
+            $logger->error("SAP nightly cronjob: failed to change to upload directory '$upload_dir'");
+            $self->_add_cron_run_log({
+                status         => 'error',
+                invoices_found => $invoices_found,
+                filename       => $filename,
+                message        => "Failed to change to upload directory '$upload_dir'",
+            });
+            return 0;
+        }
+
         open my $fh, '<', \$report;
-        if ( $transport->upload_file( $fh, $filepath ) ) {
+        if ( $transport->upload_file( $fh, $filename ) ) {
             close $fh;
             $self->_mark_invoices_submitted( $self->{_processed_invoices}, $filename, 'cron' );
-            $logger->info("SAP nightly cronjob: uploaded $filename to $filepath");
+            $logger->info("SAP nightly cronjob: uploaded $filename to $remote_display");
             $self->_add_cron_run_log({
                 status         => 'success',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "Uploaded to $filepath",
+                message        => "Uploaded to $remote_display",
             });
             return 1;
         }
         else {
             close $fh;
-            $logger->error("SAP nightly cronjob: upload failed for $filepath");
+            $logger->error("SAP nightly cronjob: upload failed for $remote_display");
             $self->_add_cron_run_log({
                 status         => 'error',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "Upload failed for $filepath",
+                message        => "Upload failed for $remote_display",
             });
             return 0;
         }
