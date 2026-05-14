@@ -69,6 +69,15 @@ sub upload {
         $upload_dir =~ s{/+$}{};    # trim trailing slashes (cosmetic);
                                     # leading slash is preserved so the
                                     # operator decides absolute vs relative
+
+        Koha::Logger->get( { category => 'Koha.Plugin.Com.OpenFifth.SAP' } )
+            ->warn( sprintf(
+                "SAP upload: plugin upload_path=[%s] transport upload_directory=[%s] effective upload_dir=[%s]",
+                $plugin->retrieve_data('upload_path') // '<undef>',
+                $transport->upload_directory         // '<undef>',
+                $upload_dir,
+            ) );
+
         my $report = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
