@@ -142,10 +142,14 @@ $(document).ready(function() {
                     if (xhr.responseJSON.error_detail) {
                         errorMsg += '\n\nDetails:';
                         var detail = xhr.responseJSON.error_detail;
-                        if (detail.operation) { errorMsg += '\nOperation: ' + detail.operation; }
-                        if (detail.path)      { errorMsg += '\nPath: '      + detail.path; }
+                        if (detail.operation)   { errorMsg += '\nOperation: '   + detail.operation; }
+                        if (detail.reason)      { errorMsg += '\nReason: '      + detail.reason; }
+                        if (detail.remote_path) { errorMsg += '\nRemote path: ' + detail.remote_path; }
+                        if (detail.path && detail.path !== '/' && detail.path !== detail.remote_path) {
+                            errorMsg += '\nPath: ' + detail.path;
+                        }
                         if (detail.status_code) { errorMsg += '\nStatus Code: ' + detail.status_code; }
-                        if (detail.error_raw) { errorMsg += '\nTechnical Details: ' + detail.error_raw; }
+                        if (detail.error_raw)   { errorMsg += '\nTechnical Details: ' + detail.error_raw; }
                     }
                 } else if (xhr.responseText) {
                     errorMsg += '\nResponse: ' + xhr.responseText;

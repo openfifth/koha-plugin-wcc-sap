@@ -113,6 +113,7 @@ sub upload {
             else {
                 my $error_detail =
                   $c->_extract_transport_error( $transport, 'upload' );
+                $error_detail->{remote_path} = $filepath;
                 return $c->render(
                     status  => 424,
                     openapi => {
@@ -207,11 +208,15 @@ sub _extract_transport_error {
                         $error_detail->{message} =
                           $op->{detail}->{error} || 'Unknown error';
 
-                        if (   defined $op->{detail}->{status}
-                            && $op->{detail}->{status} =~ /^\d+$/ )
-                        {
-                            $error_detail->{status_code} =
-                              int( $op->{detail}->{status} );
+                        if ( defined $op->{detail}->{status} ) {
+                            if ( $op->{detail}->{status} =~ /^\d+$/ ) {
+                                $error_detail->{status_code} =
+                                  int( $op->{detail}->{status} );
+                            }
+                            elsif ( $op->{detail}->{status} ne '' ) {
+                                $error_detail->{reason} =
+                                  $op->{detail}->{status};
+                            }
                         }
 
                         if (   defined $op->{detail}->{path}
@@ -245,11 +250,14 @@ sub _extract_transport_error {
                     $error_detail->{message} =
                       $payload->{error} || $error_detail->{message};
 
-                    if (   defined $payload->{status}
-                        && $payload->{status} =~ /^\d+$/ )
-                    {
-                        $error_detail->{status_code} =
-                          int( $payload->{status} );
+                    if ( defined $payload->{status} ) {
+                        if ( $payload->{status} =~ /^\d+$/ ) {
+                            $error_detail->{status_code} =
+                              int( $payload->{status} );
+                        }
+                        elsif ( $payload->{status} ne '' ) {
+                            $error_detail->{reason} = $payload->{status};
+                        }
                     }
 
                     if (   defined $payload->{path}
