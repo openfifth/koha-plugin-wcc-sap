@@ -111,6 +111,12 @@
                                     <input type="text" name="upload_path" id="upload_path"
                                            value="[% upload_path | html %]"
                                            placeholder="Leave blank to use transport's upload directory" size="40" />
+                                    <div class="hint">
+                                        Directory on the SFTP server where the file will be written. A leading
+                                        <code>/</code> makes the path absolute; without one, it is relative to the
+                                        login/home directory the SFTP user lands in. Examples:
+                                        <code>/IN/LB01/WK</code> or <code>IN/LB01/WK</code>.
+                                    </div>
                                 </li>
                             </ol>
                             [% ELSE %]

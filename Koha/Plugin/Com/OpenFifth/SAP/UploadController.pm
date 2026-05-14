@@ -63,11 +63,13 @@ sub upload {
 
         # Generate report
         my $filename   = $plugin->_generate_filename();
-        my $upload_dir = $plugin->retrieve_data('upload_path') || $transport->upload_directory || '';
-        $upload_dir =~ s{^/+}{};
-        $upload_dir =~ s{/+$}{};
-        my $filepath = $upload_dir ? "$upload_dir/$filename" : $filename;
-        my $report   = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
+        my $upload_dir = $plugin->retrieve_data('upload_path')
+                      // $transport->upload_directory
+                      // '';
+        $upload_dir =~ s{/+$}{};    # trim trailing slashes (cosmetic);
+                                    # leading slash is preserved so the
+                                    # operator decides absolute vs relative
+        my $report = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
             return $c->render(
@@ -96,7 +98,11 @@ sub upload {
             }
 
             open my $fh, '<', \$report;
-            my $upload_result = $transport->upload_file( $fh, $filepath );
+            my $upload_result = $transport->upload_file(
+                $fh,
+                $filename,
+                $upload_dir ne '' ? { path => $upload_dir } : (),
+            );
             close $fh;
 
             if ($upload_result) {
@@ -113,7 +119,9 @@ sub upload {
             else {
                 my $error_detail =
                   $c->_extract_transport_error( $transport, 'upload' );
-                $error_detail->{remote_path} = $filepath;
+                $error_detail->{remote_path} = $upload_dir ne ''
+                    ? "$upload_dir/$filename"
+                    : $filename;
                 return $c->render(
                     status  => 424,
                     openapi => {
