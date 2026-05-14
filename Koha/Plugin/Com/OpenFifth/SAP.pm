@@ -422,8 +422,8 @@ sub api_routes {
                             }
                         }
                     },
-                    "502" => {
-                        "description" => "SFTP upload failed",
+                    "424" => {
+                        "description" => "SFTP upload failed (upstream dependency)",
                         "schema"      => {
                             "type"       => "object",
                             "properties" => {
