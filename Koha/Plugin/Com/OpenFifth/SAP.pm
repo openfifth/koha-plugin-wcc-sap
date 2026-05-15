@@ -211,10 +211,8 @@ sub cronjob_nightly {
     my $start_date = $today_dt->clone->subtract( days => $days_since_prev );
     my $end_date   = $today_dt->clone->subtract( days => 1 );
 
-    my $window_text =
-        $start_date->ymd eq $end_date->ymd
-      ? $start_date->ymd
-      : sprintf( '%s to %s', $start_date->ymd, $end_date->ymd );
+    my $window_text = $self->_window_text( $start_date, $end_date );
+    my $prefix      = "[$window_text] (cron)";
 
     $logger->info("SAP nightly cronjob: generating report for $window_text");
 
@@ -224,7 +222,7 @@ sub cronjob_nightly {
         $self->_add_cron_run_log({
             status         => 'no_data',
             invoices_found => 0,
-            message        => "[$window_text] No invoices to submit",
+            message        => "$prefix No invoices to submit",
         });
         return;
     }
@@ -246,7 +244,7 @@ sub cronjob_nightly {
                 status         => 'error',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "[$window_text] Failed to change to upload directory '$upload_dir'",
+                message        => "$prefix Failed to change to upload directory '$upload_dir'",
             });
             return 0;
         }
@@ -260,7 +258,7 @@ sub cronjob_nightly {
                 status         => 'success',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "[$window_text] Uploaded to $remote_display",
+                message        => "$prefix Uploaded to $remote_display",
             });
             return 1;
         }
@@ -271,7 +269,7 @@ sub cronjob_nightly {
                 status         => 'error',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "[$window_text] Upload failed for $remote_display",
+                message        => "$prefix Upload failed for $remote_display",
             });
             return 0;
         }
@@ -288,7 +286,7 @@ sub cronjob_nightly {
             status         => 'success',
             invoices_found => $invoices_found,
             filename       => $filename,
-            message        => "[$window_text] Wrote local file $file_path",
+            message        => "$prefix Wrote local file $file_path",
         });
         return 1;
     }
@@ -811,6 +809,13 @@ sub _mark_invoices_submitted {
     for my $inv (@$invoice_numbers) {
         $sth->execute( $inv, $by // 'cron', $filename );
     }
+}
+
+sub _window_text {
+    my ( $self, $start, $end ) = @_;
+    return '' unless $start && $end;
+    return $start->ymd if $start->ymd eq $end->ymd;
+    return sprintf( '%s to %s', $start->ymd, $end->ymd );
 }
 
 sub _add_cron_run_log {

@@ -43,6 +43,9 @@ sub upload {
         );
     }
 
+    my $window_text = $plugin->_window_text( $startdate, $enddate );
+    my $prefix      = "[$window_text] (manual)";
+
     # Check output configuration
     my $output = $plugin->retrieve_data('output');
 
@@ -52,6 +55,10 @@ sub upload {
         my $transport = Koha::File::Transports->find(
             $plugin->retrieve_data('transport_server') );
         unless ($transport) {
+            $plugin->_add_cron_run_log({
+                status  => 'error',
+                message => "$prefix No SFTP transport configured",
+            });
             return $c->render(
                 status  => 503,
                 openapi => {
@@ -72,6 +79,10 @@ sub upload {
         my $report = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
+            $plugin->_add_cron_run_log({
+                status  => 'error',
+                message => "$prefix Failed to generate report",
+            });
             return $c->render(
                 status  => 500,
                 openapi => {
@@ -81,12 +92,22 @@ sub upload {
             );
         }
 
+        my $invoices_found = scalar @{ $plugin->{_processed_invoices} || [] };
+        my $remote_display = $upload_dir ne '' ? "$upload_dir/$filename" : $filename;
+
         # Upload to SFTP
         eval {
             my $connect_result = $transport->connect;
             unless ($connect_result) {
                 my $error_detail =
                   $c->_extract_transport_error( $transport, 'connection' );
+                $plugin->_add_cron_run_log({
+                    status         => 'error',
+                    invoices_found => $invoices_found,
+                    filename       => $filename,
+                    message        => "$prefix SFTP connection failed: "
+                                    . $error_detail->{message},
+                });
                 return $c->render(
                     status  => 424,
                     openapi => {
@@ -106,6 +127,13 @@ sub upload {
             {
                 my $error_detail =
                   $c->_extract_transport_error( $transport, 'change_directory' );
+                $plugin->_add_cron_run_log({
+                    status         => 'error',
+                    invoices_found => $invoices_found,
+                    filename       => $filename,
+                    message        => "$prefix Failed to change to upload directory '$upload_dir': "
+                                    . $error_detail->{message},
+                });
                 return $c->render(
                     status  => 424,
                     openapi => {
@@ -123,6 +151,12 @@ sub upload {
 
             if ($upload_result) {
                 $plugin->_mark_invoices_submitted( $plugin->{_processed_invoices}, $filename, 'manual' );
+                $plugin->_add_cron_run_log({
+                    status         => 'success',
+                    invoices_found => $invoices_found,
+                    filename       => $filename,
+                    message        => "$prefix Uploaded to $remote_display",
+                });
                 return $c->render(
                     status  => 200,
                     openapi => {
@@ -138,6 +172,13 @@ sub upload {
                 $error_detail->{remote_path} = $upload_dir ne ''
                     ? "$upload_dir/$filename"
                     : $filename;
+                $plugin->_add_cron_run_log({
+                    status         => 'error',
+                    invoices_found => $invoices_found,
+                    filename       => $filename,
+                    message        => "$prefix SFTP upload failed for $remote_display: "
+                                    . $error_detail->{message},
+                });
                 return $c->render(
                     status  => 424,
                     openapi => {
@@ -150,6 +191,12 @@ sub upload {
         };
 
         if ($@) {
+            $plugin->_add_cron_run_log({
+                status         => 'error',
+                invoices_found => $invoices_found,
+                filename       => $filename,
+                message        => "$prefix SFTP upload exception: $@",
+            });
             return $c->render(
                 status  => 424,
                 openapi => {
@@ -165,6 +212,10 @@ sub upload {
         my $report   = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
 
         unless ($report) {
+            $plugin->_add_cron_run_log({
+                status  => 'error',
+                message => "$prefix Failed to generate report",
+            });
             return $c->render(
                 status  => 500,
                 openapi => {
@@ -174,6 +225,7 @@ sub upload {
             );
         }
 
+        my $invoices_found = scalar @{ $plugin->{_processed_invoices} || [] };
         my $file_path =
           File::Spec->catfile( $plugin->bundle_path, 'output', $filename );
 
@@ -184,6 +236,12 @@ sub upload {
             close($fh);
 
             $plugin->_mark_invoices_submitted( $plugin->{_processed_invoices}, $filename, 'manual' );
+            $plugin->_add_cron_run_log({
+                status         => 'success',
+                invoices_found => $invoices_found,
+                filename       => $filename,
+                message        => "$prefix Wrote local file $file_path",
+            });
             return $c->render(
                 status  => 200,
                 openapi => {
@@ -195,6 +253,12 @@ sub upload {
         };
 
         if ($@) {
+            $plugin->_add_cron_run_log({
+                status         => 'error',
+                invoices_found => $invoices_found,
+                filename       => $filename,
+                message        => "$prefix Error saving file $file_path: $@",
+            });
             return $c->render(
                 status  => 500,
                 openapi => {
