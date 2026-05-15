@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.16] - 2026-05-15
+
 ## [1.0.15] - 2026-05-15
 
 ## [1.0.14] - 2026-05-14
@@ -384,7 +386,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.15...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.16...HEAD
+[1.0.16]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.15...v1.0.16
 [1.0.15]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.14...v1.0.15
 [1.0.14]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.13...v1.0.14
 [1.0.13]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.12...v1.0.13
