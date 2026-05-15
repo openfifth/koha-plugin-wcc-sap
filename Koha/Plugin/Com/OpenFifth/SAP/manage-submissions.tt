@@ -37,7 +37,7 @@
                 <div class="page-section">
                     <h2>Recent cron runs</h2>
                     [% IF cron_runs.size %]
-                    <p>The 30 most recent nightly cron executions. <strong>success</strong> means a file was generated and delivered; <strong>no_data</strong> means the cron ran but found no invoices for the date range; <strong>error</strong> means delivery failed.</p>
+                    <p>The 30 most recent nightly cron executions. <strong>success</strong> means a file was generated and delivered; <strong>no_data</strong> means the cron ran but found no invoices for the date range; <strong>error</strong> means delivery failed. The leading <code>[YYYY-MM-DD to YYYY-MM-DD]</code> in <em>Detail</em> is the inclusive date window each run scanned (invoices closed today are picked up on the next scheduled run).</p>
                     <table class="table table-bordered table-sm">
                         <thead>
                             <tr>

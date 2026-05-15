@@ -186,29 +186,37 @@ sub cronjob_nightly {
         }
     }
 
-    # Find start date (previous selected day) and end date (today)
-    my $previous_day =
-      max( grep { $_ < $today } @selected_days );   # Last selected before today
-    $previous_day //=
-      $selected_days[-1];    # Wrap around to last one from previous week
+    # Work out how many days back the previous scheduled run was. Invoices
+    # closed *today* are excluded because the cron typically runs in the
+    # early hours and any invoices closed later in the day would otherwise
+    # be missed entirely (the next run starts from the day after today).
+    my $prev_in_week = max( grep { $_ < $today } @selected_days );
+    my $days_since_prev;
+    if ( defined $prev_in_week ) {
+        $days_since_prev = $today - $prev_in_week;
+    }
+    else {
+        # No earlier scheduled day this week -- wrap to the last selected
+        # day in the previous week. For a single-day schedule this means
+        # the previous run was exactly seven days ago.
+        $days_since_prev = ( $today - $selected_days[-1] ) % 7;
+        $days_since_prev ||= 7;
+    }
 
-    # Calculate the start date (day after previous selected day) and end date (today).
-    # We add 1 day so the range is (previous_run_day, today] rather than
-    # [previous_run_day, today], preventing invoices on the boundary date from
-    # appearing in two consecutive runs.
-    my $now = DateTime->now;
-    my $start_date =
-      $now->clone->subtract( days => ( $today - $previous_day ) % 7 )
-                 ->add( days => 1 );
-    my $end_date = $now;
+    # Build a day-granular inclusive window [previous_selected_day, yesterday].
+    # We truncate to the day so the in-memory range matches the date-only
+    # semantics of the SQL query in _generate_report (which uses
+    # datetime_parser->format_date, dropping any time component).
+    my $today_dt   = dt_from_string()->truncate( to => 'day' );
+    my $start_date = $today_dt->clone->subtract( days => $days_since_prev );
+    my $end_date   = $today_dt->clone->subtract( days => 1 );
 
-    my $start_display = $start_date->strftime('%Y-%m-%d %H:%M:%S');
-    my $end_display   = $end_date->strftime('%Y-%m-%d %H:%M:%S');
+    my $window_text =
+        $start_date->ymd eq $end_date->ymd
+      ? $start_date->ymd
+      : sprintf( '%s to %s', $start_date->ymd, $end_date->ymd );
 
-    $logger->info( sprintf(
-        "SAP nightly cronjob: generating report for %s to %s",
-        $start_display, $end_display
-    ) );
+    $logger->info("SAP nightly cronjob: generating report for $window_text");
 
     my $report = $self->_generate_report( $start_date, $end_date, 1, 1 );
     unless ($report) {
@@ -216,7 +224,7 @@ sub cronjob_nightly {
         $self->_add_cron_run_log({
             status         => 'no_data',
             invoices_found => 0,
-            message        => sprintf( 'No invoices to submit for %s to %s', $start_display, $end_display ),
+            message        => "[$window_text] No invoices to submit",
         });
         return;
     }
@@ -238,7 +246,7 @@ sub cronjob_nightly {
                 status         => 'error',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "Failed to change to upload directory '$upload_dir'",
+                message        => "[$window_text] Failed to change to upload directory '$upload_dir'",
             });
             return 0;
         }
@@ -252,7 +260,7 @@ sub cronjob_nightly {
                 status         => 'success',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "Uploaded to $remote_display",
+                message        => "[$window_text] Uploaded to $remote_display",
             });
             return 1;
         }
@@ -263,7 +271,7 @@ sub cronjob_nightly {
                 status         => 'error',
                 invoices_found => $invoices_found,
                 filename       => $filename,
-                message        => "Upload failed for $remote_display",
+                message        => "[$window_text] Upload failed for $remote_display",
             });
             return 0;
         }
@@ -280,7 +288,7 @@ sub cronjob_nightly {
             status         => 'success',
             invoices_found => $invoices_found,
             filename       => $filename,
-            message        => "Wrote local file $file_path",
+            message        => "[$window_text] Wrote local file $file_path",
         });
         return 1;
     }
