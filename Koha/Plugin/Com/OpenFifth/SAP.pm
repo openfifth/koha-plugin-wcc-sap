@@ -347,7 +347,14 @@ sub report_step2 {
         $enddate = eval { dt_from_string($enddate) };
     }
 
-    my $results = $self->_generate_report( $startdate, $enddate );
+    # The TO input is exclusive: the report covers invoices closed on or
+    # after FROM and *before* TO. Match the SQL window by shifting the
+    # effective end back by one day so it lines up with the cron's
+    # day-granular [start, end] inclusive semantics.
+    my $effective_enddate =
+      $enddate ? $enddate->clone->subtract( days => 1 ) : undef;
+
+    my $results = $self->_generate_report( $startdate, $effective_enddate );
 
     my $templatefile;
     my $already_submitted_count = 0;
@@ -369,8 +376,9 @@ sub report_step2 {
 
     $template->param(
         date_ran                => dt_from_string(),
-        startdate               => dt_from_string($startdate),
-        enddate                 => dt_from_string($enddate),
+        startdate               => $startdate,
+        enddate                 => $enddate,
+        effective_enddate       => $effective_enddate,
         results                 => $results,
         filename                => $self->_generate_filename(),
         output_config           => $self->retrieve_data('output'),

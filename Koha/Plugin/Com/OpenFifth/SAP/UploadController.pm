@@ -43,7 +43,12 @@ sub upload {
         );
     }
 
-    my $window_text = $plugin->_window_text( $startdate, $enddate );
+    # TO is exclusive: the actual scanned window ends the day before the
+    # user-selected TO date, mirroring the report UI labels ("Closed on
+    # or after" / "Closed before") and the cron's day-granular window.
+    my $effective_enddate = $enddate->clone->subtract( days => 1 );
+
+    my $window_text = $plugin->_window_text( $startdate, $effective_enddate );
     my $prefix      = "[$window_text] (manual)";
 
     # Check output configuration
@@ -76,7 +81,7 @@ sub upload {
         $upload_dir =~ s{/+$}{};    # trim trailing slashes (cosmetic);
                                     # leading slash is preserved so the
                                     # operator decides absolute vs relative
-        my $report = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
+        my $report = $plugin->_generate_report( $startdate, $effective_enddate, 0, 1 );
 
         unless ($report) {
             $plugin->_add_cron_run_log({
@@ -209,7 +214,7 @@ sub upload {
     else {
         # Save to local file
         my $filename = $plugin->_generate_filename();
-        my $report   = $plugin->_generate_report( $startdate, $enddate, 0, 1 );
+        my $report   = $plugin->_generate_report( $startdate, $effective_enddate, 0, 1 );
 
         unless ($report) {
             $plugin->_add_cron_run_log({

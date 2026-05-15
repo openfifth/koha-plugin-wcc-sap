@@ -56,7 +56,7 @@
             <main>
                 <h1>WCC SAP Finance Integration - Results - [% date_ran | $KohaDates %]</h1>
                 <div class="page-section">
-                    <p>Report for invoices closed between [% startdate | $KohaDates %] and [% enddate | $KohaDates %]</p>
+                    <p>Report for invoices closed on or after [% startdate | $KohaDates %] and closed before [% enddate | $KohaDates %] (scanned range: [% startdate | $KohaDates %] to [% effective_enddate | $KohaDates %] inclusive).</p>
                     [% IF already_submitted_count %]
                     <div class="alert alert-warning">
                         <strong>[% already_submitted_count %] invoice(s) in this date range have already been submitted</strong>

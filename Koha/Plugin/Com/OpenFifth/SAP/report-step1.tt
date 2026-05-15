@@ -38,7 +38,7 @@
                     <fieldset class="rows">
 						<legend>Dates</legend>
                         <p class="hint">
-                            The report includes every WCC invoice whose <strong>close date</strong> falls on or between the two dates below (inclusive of both ends). Dates are whole days &mdash; no time component &mdash; so picking <em>today</em> as the end date will include any invoices already closed today, but not those still open. If you want to capture everything up to the end of yesterday, set the end date to yesterday.
+                            The report includes every WCC invoice whose <strong>close date</strong> is on or after the <em>after</em> date and strictly <em>before</em> the <em>before</em> date. Dates are whole days &mdash; no time component &mdash; and the <em>before</em> date is itself excluded, so picking <em>today</em> as the before date will capture everything closed up to the end of yesterday and nothing from today. This matches how the nightly cron picks its window, so a manual run with these two dates produces the same window the cron would scan.
                         </p>
                         <li>
                             <label for="from" class="required"> Closed on or after:</label>
@@ -46,7 +46,7 @@
                             <span class="required">Required</span>
                         </li>
                         <li>
-                            <label for="to" class="required"> Closed on or before:</label>
+                            <label for="to" class="required"> Closed before:</label>
                             <input type="text" size="10" id="to" name="to" value="[% enddate | $KohaDates date_format => 'iso' %]" class="flatpickr" required="required"/>
                             <span class="required">Required</span>
                         </li>
