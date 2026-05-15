@@ -202,9 +202,12 @@ sub cronjob_nightly {
                  ->add( days => 1 );
     my $end_date = $now;
 
+    my $start_display = $start_date->strftime('%Y-%m-%d %H:%M:%S');
+    my $end_display   = $end_date->strftime('%Y-%m-%d %H:%M:%S');
+
     $logger->info( sprintf(
         "SAP nightly cronjob: generating report for %s to %s",
-        $start_date->ymd, $end_date->ymd
+        $start_display, $end_display
     ) );
 
     my $report = $self->_generate_report( $start_date, $end_date, 1, 1 );
@@ -213,7 +216,7 @@ sub cronjob_nightly {
         $self->_add_cron_run_log({
             status         => 'no_data',
             invoices_found => 0,
-            message        => sprintf( 'No invoices to submit for %s to %s', $start_date->ymd, $end_date->ymd ),
+            message        => sprintf( 'No invoices to submit for %s to %s', $start_display, $end_display ),
         });
         return;
     }
