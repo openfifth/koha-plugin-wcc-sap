@@ -237,7 +237,17 @@ sub cronjob_nightly {
         $upload_dir =~ s{/+$}{};
         my $remote_display = $upload_dir ne '' ? "$upload_dir/$filename" : $filename;
 
-        $transport->connect;
+        eval { $transport->connect };
+        if ($@) {
+            $logger->error("SAP nightly cronjob: connection failed for $filename: $@");
+            $self->_add_cron_run_log({
+                status         => 'error',
+                invoices_found => $invoices_found,
+                filename       => $filename,
+                message        => "$prefix Connection failed: $@",
+            });
+            return 0;
+        }
         if ( $upload_dir ne '' && !$transport->change_directory($upload_dir) ) {
             $logger->error("SAP nightly cronjob: failed to change to upload directory '$upload_dir'");
             $self->_add_cron_run_log({
