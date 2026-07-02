@@ -121,7 +121,7 @@
                             </ol>
                             [% ELSE %]
                             <div class="alert alert-info">
-                                No transports found, would you like to <a href="/cgi-bin/koha/admin/sftp_servers.pl?op=add_form">add</a> one?
+                                No transports found, would you like to <a href="/cgi-bin/koha/admin/file_transports.pl?op=add_form">add</a> one?
                             </div>
                             [% END %]
                         </fieldset>
