@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.20] - 2026-08-04
+
 ### Fixed
 
 - `_generate_report`: strip the trailing CRLF that `Text::CSV`'s `eol` option appends after the final row. Every delivery path (nightly cron, manual SFTP upload, browser download) passed that dangling line terminator through untouched, and SAP's parser read it as an extra empty trailing record and rejected the file — the same class of bug fixed for the browser-download path only in 1.0.17
@@ -456,7 +458,8 @@ Release housekeeping only — no functional changes.
 - Support for multiple fund codes and cost centers
 - Tax code mapping (P1: 20%, P2: 5%, P3: 0%)
 
-[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.19...HEAD
+[Unreleased]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.20...HEAD
+[1.0.20]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.19...v1.0.20
 [1.0.19]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.18...v1.0.19
 [1.0.18]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.17...v1.0.18
 [1.0.17]: https://github.com/openfifth/koha-plugin-wcc-sap/compare/v1.0.16...v1.0.17
