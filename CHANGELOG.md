@@ -7,29 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `_generate_report`: strip the trailing CRLF that `Text::CSV`'s `eol` option appends after the final row. Every delivery path (nightly cron, manual SFTP upload, browser download) passed that dangling line terminator through untouched, and SAP's parser read it as an extra empty trailing record and rejected the file — the same class of bug fixed for the browser-download path only in 1.0.17
+
 ## [1.0.19] - 2026-07-03
+
+### Changed
+
+- CI: migrate the GitHub Actions workflow from the old koha-testing-docker compose flow (removed upstream) to the `ktd` CLI, targeting OpenFifth's `25.11.o5th` Koha image. Adds a `pull_request` trigger, JUnit result publishing, log-on-failure output, and a keepalive job to protect the scheduled cron trigger
 
 ## [1.0.18] - 2026-07-03
 
+### Fixed
+
+- Guard `Koha::File::Transport->connect` in the nightly cronjob with an `eval` so a failed SFTP connection is logged as a cron-run error instead of aborting the whole run with no recorded reason (the manual upload path already guarded this)
+- Update the "add a transport" admin link on the configuration page from the renamed `sftp_servers.pl` to `file_transports.pl` (Koha bug 39190), which was 404ing on Koha 25.11+
+
 ## [1.0.17] - 2026-05-19
+
+### Fixed
+
+- Downloaded TXT reports: stop Template Toolkit from appending extra blank lines after the CSV content — SAP ingestion was failing on the trailing blank line(s) at the end of the file
 
 ## [1.0.16] - 2026-05-15
 
+### Changed
+
+- Tools page: turn the "Recent submission runs" status legend into a bulleted list and explain the `[YYYY-MM-DD to YYYY-MM-DD] (cron|manual)` detail-message prefix, making run history easier to scan
+
 ## [1.0.15] - 2026-05-15
+
+### Added
+
+- Audit trail for manual submissions: `UploadController` now records success/error rows in `plugin_sap_cron_runs` for every SFTP upload or local save triggered from the Run report page, not just nightly cron runs
+- Every submission-log message is now prefixed with `[<window>] (cron|manual)`, so the Tools page shows both the scanned date window and how the run was triggered
+
+### Changed
+
+- Report UI: the manual "Run report" TO date is now exclusive ("Closed before"), matching the nightly cron's day-granular window — previously the same two calendar dates typed into the UI and configured for the cron could scan different ranges. The results page shows both the user-entered window and the effective scanned (inclusive) range
+
+### Fixed
+
+- Nightly cron: compute the scan window in whole days (truncated to midnight) instead of from the cron's time-of-day, and make it the inclusive range `[previous scheduled day, yesterday]`. The previous time-of-day-based window could silently skip invoices closed later in the day on a scheduled run, and a single-day weekly schedule could produce a zero-length window after wrap-around
+- Cron-run log messages now include the full timestamp, not just the date, for the scanned window
 
 ## [1.0.14] - 2026-05-14
 
+### Fixed
+
+- Honour the configured `upload_path` on Koha 24.11: the 1.0.12 fix relied on an `upload_file(..., { path => ... })` options-hash form that only exists on Koha main, so on 24.11 (the plugin's declared minimum version) the option was silently dropped and files landed in the SFTP user's default directory regardless of configuration. Both the report-upload controller and the nightly cronjob now call the public `change_directory()` explicitly before uploading — present on both 24.11 and main — and surface a clear error if entering the configured directory fails
+- Removes the temporary diagnostic logging added in 1.0.13
+
 ## [1.0.13] - 2026-05-14
+
+### Added
+
+- Temporary diagnostic logging of the resolved SFTP `upload_path` for the manual upload endpoint, to help diagnose reports of uploads landing in the wrong directory (superseded by a proper fix and removed in 1.0.14)
 
 ## [1.0.12] - 2026-05-14
 
+### Fixed
+
+- Respect operator-configured absolute vs. relative SFTP upload paths: the upload endpoint was stripping any leading slash from `upload_path` and concatenating it into the filename argument, forcing every path to be interpreted relative to wherever the SFTP user landed. It now uses the documented `upload_file($local, $filename, { path => $dir })` form and preserves the leading slash as typed; the configuration page also gains a hint explaining absolute vs. relative path semantics with examples
+
 ## [1.0.11] - 2026-05-14
+
+### Added
+
+- Surface the actual SFTP failure reason and target remote path in the upload error alert — non-numeric SFTP status strings were previously discarded, and the path shown was always the SSH connection root (`/`) rather than the file that failed to upload
 
 ## [1.0.10] - 2026-05-14
 
+### Changed
+
+- Return HTTP 424 (Failed Dependency) instead of 502 for SFTP failures on the upload endpoint. Cloudflare's Custom Error Pages feature rewrites any 5xx response body from origin with a generic error page, masking the detailed SFTP error JSON the endpoint returns; 424 keeps 4xx semantics that Cloudflare passes through verbatim
+
 ## [1.0.9] - 2026-05-13
 
+### Fixed
+
+- Add a CSRF token to the configuration form now that it POSTs — Koha's CSRF middleware rejects stateful requests without a valid `csrf_token`, so saving configuration returned HTTP 403 after the switch to POST in 1.0.8
+
 ## [1.0.8] - 2026-05-13
+
+### Fixed
+
+- Submit the configuration form via POST instead of GET to avoid HTTP 414 (URI Too Long): with a large number of acquisition funds, the two mapping inputs per fund pushed the GET query string past the web server's request-line limit, so saving configuration failed before reaching the plugin
 
 ## [1.0.7] - 2026-05-07
 
