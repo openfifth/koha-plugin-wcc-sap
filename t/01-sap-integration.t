@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use Modern::Perl;
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Test::Exception;
 use Path::Tiny qw(path);
 
@@ -67,6 +67,23 @@ subtest '_generate_report with cron parameter' => sub {
     lives_ok {
         $plugin->_generate_report($start_date, $end_date);
     } '_generate_report works without cron parameter';
+};
+
+# Regression test: Text::CSV's eol is appended after every row, including
+# the last one. A naive line-splitting parser (SAP's included) reads that
+# trailing CRLF as an extra empty record and rejects the file, so
+# _generate_report must strip it before returning.
+subtest '_generate_report does not leave a trailing CRLF' => sub {
+    plan tests => 3;
+
+    my $start_date = DateTime->new(year => 2024, month => 1, day => 1);
+    my $end_date   = DateTime->new(year => 2024, month => 1, day => 31);
+
+    my $report = $plugin->_generate_report($start_date, $end_date);
+
+    ok(length($report), 'Report was generated (at least the Control Total row)');
+    like($report, qr/^CT,/, 'Report starts with the Control Total row');
+    unlike($report, qr/\015\012\z/, 'Report has no trailing CRLF after the last row');
 };
 
 # Test metadata structure
