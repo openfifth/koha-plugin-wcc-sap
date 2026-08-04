@@ -779,6 +779,13 @@ sub _generate_report {
     }
     
     close $fh;
+
+    # Text::CSV's eol is appended after every row, including the last one,
+    # leaving a trailing CRLF with nothing after it. Naive line-splitting
+    # parsers (SAP's included) read that as an extra empty trailing record
+    # and reject the file, so strip it here for every consumer.
+    $results =~ s/\015\012\z//;
+
     return $results;
 }
 
