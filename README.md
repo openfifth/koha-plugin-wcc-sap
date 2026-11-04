@@ -53,4 +53,4 @@ For additional documentation, see the [docs/](docs/) directory:
 
 - **Issues**: [GitHub Issues](https://github.com/openfifth/koha-plugin-wcc-sap/issues)
 - **Author**: Open Fifth
-- **License**: GPL-3.0
+- **License**: AGPL-3.0-or-later

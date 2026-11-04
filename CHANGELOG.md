@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Relicensed under AGPL-3.0-or-later: added `LICENSE`, SPDX header, and `license`/`license_url` plugin metadata (the licence is also stated in the description, which is what Koha displays).
+
 ## [1.0.20] - 2026-08-04
 
 ### Fixed
