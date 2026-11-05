@@ -6,7 +6,7 @@
     "module": "Koha::Plugin::Com::OpenFifth::SAP",
     "pm_path": "Koha/Plugin/Com/OpenFifth/SAP.pm"
   },
-  "version": "1.0.20",
+  "version": "1.0.21",
   "previous_version": "1.0.20",
   "scripts": {
     "version:patch": "node increment_version.js patch | cat",
